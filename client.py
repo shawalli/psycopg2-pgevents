@@ -10,7 +10,7 @@ conn = psycopg2.connect(
 conn.autocommit = True
 
 curs = conn.cursor()
-curs.execute('LISTEN "salesforce.pgnotify";')
+curs.execute('LISTEN "pgnotify";')
 
 try:
     seconds_passed = 0
