@@ -23,6 +23,12 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- **** Schema: public ****
+--
+
+SET search_path = public, pg_catalog;
+
+--
 -- Name: settings; Type: TABLE; Schema: -; Owner: -; Tablespace: -
 --
 
@@ -61,6 +67,10 @@ ALTER TABLE ONLY settings ALTER COLUMN id SET DEFAULT nextval('settings_id_seq':
 
 ALTER TABLE ONLY settings
     ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+--
+-- **** Schema: salesforce ****
+--
 
 SET search_path = salesforce, pg_catalog;
 
@@ -103,3 +113,9 @@ ALTER TABLE ONLY order__c ALTER COLUMN id SET DEFAULT nextval('order__c_id_seq':
 
 ALTER TABLE ONLY order__c
     ADD CONSTRAINT order__c_pkey PRIMARY KEY (id);
+
+--
+-- **** Schema: - ****
+--
+
+SET search_path = "$user", public;

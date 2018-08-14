@@ -1,3 +1,7 @@
+--
+-- **** Schema: public ****
+--
+
 SET search_path = public, pg_catalog;
 
 CREATE OR REPLACE FUNCTION pgnotify()
@@ -17,6 +21,10 @@ RETURNS TRIGGER AS $function$
 $function$
 LANGUAGE plpgsql;
 
+--
+-- **** Schema: salesforce ****
+--
+
 SET search_path = salesforce, pg_catalog;
 
 DROP TRIGGER IF EXISTS pgnotify ON salesforce.order__c;
@@ -25,3 +33,9 @@ CREATE TRIGGER pgnotify
 AFTER INSERT ON salesforce.order__c
 FOR EACH ROW
 EXECUTE PROCEDURE public.pgnotify();
+
+--
+-- **** Schema: - ****
+--
+
+SET search_path = "$user", public;
