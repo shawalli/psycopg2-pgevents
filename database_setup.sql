@@ -22,12 +22,51 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
+--
+-- Name: settings; Type: TABLE; Schema: -; Owner: -; Tablespace: -
+--
+
+CREATE TABLE settings (
+    id integer NOT NULL,
+    key character varying,
+    value integer
+);
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE; Schema: -; Owner: -
+--
+
+CREATE SEQUENCE settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE OWNED BY; Schema: -; Owner: -
+--
+
+ALTER SEQUENCE settings_id_seq OWNED BY settings.id;
+
+--
+-- Name: id; Type: DEFAULT; Schema: -; Owner: -
+--
+
+ALTER TABLE ONLY settings ALTER COLUMN id SET DEFAULT nextval('settings_id_seq'::regclass);
+
+--
+-- Name: settings_pkey; Type: CONSTRAINT; Schema: -; Owner: -; Tablespace: -
+--
+
+ALTER TABLE ONLY settings
+    ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
 SET search_path = salesforce, pg_catalog;
 
 --
 -- Name: order__c; Type: TABLE; Schema: salesforce; Owner: -; Tablespace: -
 --
-
 
 CREATE TABLE order__c (
     id integer NOT NULL,
