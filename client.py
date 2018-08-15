@@ -24,9 +24,7 @@ try:
             conn.poll()
             while conn.notifies:
                 notify = conn.notifies.pop()
-                print(
-                    f"NOTIFY:{datetime.datetime.now()}:{notify.pid}:{notify.channel}: {notify.payload}"
-                )
+                print(f"NOTIFY:{datetime.datetime.now()}:{notify.pid}:{notify.channel}: {notify.payload}")
 except KeyboardInterrupt:
     print("Unlistening for events")
     curs.execute("UNLISTEN pgevents;")
