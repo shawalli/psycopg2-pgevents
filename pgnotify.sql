@@ -5,15 +5,15 @@
 SET search_path = public, pg_catalog;
 
 --
--- Name: pgnotify; Type: FUNCTION; Schema: public; Owner: -
+-- Name: pgevents; Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION pgnotify()
+CREATE OR REPLACE FUNCTION pgevents()
 RETURNS TRIGGER AS $function$
   BEGIN
     RAISE WARNING 'triggered';
     PERFORM pg_notify(
-        'pgnotify',
+        'pgevents',
         json_build_object(
           'schema_name', TG_TABLE_SCHEMA,
           'table_name', TG_TABLE_NAME,
@@ -26,32 +26,32 @@ $function$
 LANGUAGE plpgsql;
 
 --
--- Name: pgnotify; Type: TRIGGER; Schema: public; Owner: settings
+-- Name: pgevents; Type: TRIGGER; Schema: public; Owner: settings
 --
 
-DROP TRIGGER IF EXISTS pgnotify ON public.settings;
+DROP TRIGGER IF EXISTS pgevents ON public.settings;
 
-CREATE TRIGGER pgnotify
+CREATE TRIGGER pgevents
 AFTER INSERT ON public.settings
 FOR EACH ROW
-EXECUTE PROCEDURE public.pgnotify();
+EXECUTE PROCEDURE public.pgevents();
 
 --
--- **** Schema: salesforce ****
+-- **** Schema: pointofsale ****
 --
 
-SET search_path = salesforce, pg_catalog;
+SET search_path = pointofsale, pg_catalog;
 
 --
--- Name: pgnotify; Type: TRIGGER; Schema: salesforce; Owner: order__c
+-- Name: pgevents; Type: TRIGGER; Schema: pointofsale; Owner: orders
 --
 
-DROP TRIGGER IF EXISTS pgnotify ON salesforce.order__c;
+DROP TRIGGER IF EXISTS pgevents ON pointofsale.orders;
 
-CREATE TRIGGER pgnotify
-AFTER INSERT ON salesforce.order__c
+CREATE TRIGGER pgevents
+AFTER INSERT ON pointofsale.orders
 FOR EACH ROW
-EXECUTE PROCEDURE public.pgnotify();
+EXECUTE PROCEDURE public.pgevents();
 
 --
 -- **** Schema: - ****

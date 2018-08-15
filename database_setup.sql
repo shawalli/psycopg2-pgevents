@@ -7,10 +7,10 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 
 --
--- Name: salesforce; Type: SCHEMA; Schema: -; Owner: -
+-- Name: pointofsale; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA salesforce;
+CREATE SCHEMA pointofsale;
 
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
@@ -69,26 +69,25 @@ ALTER TABLE ONLY settings
     ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
 
 --
--- **** Schema: salesforce ****
+-- **** Schema: pointofsale ****
 --
 
-SET search_path = salesforce, pg_catalog;
+SET search_path = pointofsale, pg_catalog;
 
 --
--- Name: order__c; Type: TABLE; Schema: salesforce; Owner: -; Tablespace: -
+-- Name: orders; Type: TABLE; Schema: pointofsale; Owner: -; Tablespace: -
 --
 
-CREATE TABLE order__c (
+CREATE TABLE orders (
     id integer NOT NULL,
-    sfid character varying(18),
     description character varying(255)
 );
 
 --
--- Name: order__c_id_seq; Type: SEQUENCE; Schema: salesforce; Owner: -
+-- Name: orders_id_seq; Type: SEQUENCE; Schema: pointofsale; Owner: -
 --
 
-CREATE SEQUENCE order__c_id_seq
+CREATE SEQUENCE orders_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -96,23 +95,23 @@ CREATE SEQUENCE order__c_id_seq
     CACHE 1;
 
 --
--- Name: order__c_id_seq; Type: SEQUENCE OWNED BY; Schema: salesforce; Owner: -
+-- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: pointofsale; Owner: -
 --
 
-ALTER SEQUENCE order__c_id_seq OWNED BY order__c.id;
+ALTER SEQUENCE orders_id_seq OWNED BY orders.id;
 
 --
--- Name: id; Type: DEFAULT; Schema: salesforce; Owner: -
+-- Name: id; Type: DEFAULT; Schema: pointofsale; Owner: -
 --
 
-ALTER TABLE ONLY order__c ALTER COLUMN id SET DEFAULT nextval('order__c_id_seq'::regclass);
+ALTER TABLE ONLY orders ALTER COLUMN id SET DEFAULT nextval('orders_id_seq'::regclass);
 
 --
--- Name: order__c_pkey; Type: CONSTRAINT; Schema: salesforce; Owner: -; Tablespace: -
+-- Name: orders_pkey; Type: CONSTRAINT; Schema: pointofsale; Owner: -; Tablespace: -
 --
 
-ALTER TABLE ONLY order__c
-    ADD CONSTRAINT order__c_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
 
 --
 -- **** Schema: - ****
