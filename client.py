@@ -18,13 +18,20 @@ try:
     while 1:
         if select.select([conn], [], [], 5) == ([], [], []):
             seconds_passed += 5
-            print("{} seconds passed without a notification...".format(seconds_passed))
+            print('{seconds} seconds passed without a notification...'.format(seconds=seconds_passed))
         else:
             seconds_passed = 0
             conn.poll()
             while conn.notifies:
                 notify = conn.notifies.pop()
-                print(f"NOTIFY:{datetime.datetime.now()}:{notify.pid}:{notify.channel}: {notify.payload}")
+                print(
+                    'NOTIFY:{timestamp}:{pid}:{channel}: {message}'.format(
+                        timestamp=datetime.datetime.now(),
+                        pid=notify.pid
+                        channel=notify.channel,
+                        message=notify.payload
+                    )
+                )
 except KeyboardInterrupt:
     print("Unlistening for events")
     curs.execute("UNLISTEN pgevents;")

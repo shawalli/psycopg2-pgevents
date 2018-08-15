@@ -8,4 +8,4 @@ __author__ = 'Shawn Wallis'
 __email__ = 'shawn.p.wallis@gmail.com'
 
 __license__ = 'MIT'
-__copyright__ = f'Copyright 2018 {__author__}'
+__copyright__ = 'Copyright 2018 {author}'.format(author=__author__)

@@ -18,8 +18,8 @@ def connection():
     _conn.autocommit = True
     _curs = _conn.cursor()
 
-    _curs.execute(f'DROP DATABASE IF EXISTS {TEST_DATABASE};')
-    _curs.execute(f'CREATE DATABASE {TEST_DATABASE};')
+    _curs.execute('DROP DATABASE IF EXISTS {db}'.format(db=TEST_DATABASE))
+    _curs.execute('CREATE DATABASE {db}'.format(db=TEST_DATABASE))
 
     # Create test database connection
     conn = connect(database=TEST_DATABASE)
