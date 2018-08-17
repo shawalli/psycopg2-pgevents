@@ -1,16 +1,17 @@
-from psycopg2 import DatabaseError, ProgrammingError
+from psycopg2 import ProgrammingError
 
 
 def execute(connection, statement):
     cursor = connection.cursor()
     autocommit_setting = connection.autocommit
 
-    result = list()
+    response = list()
     try:
         connection.autocommit = True
 
         cursor.execute(statement)
 
+        # Get response
         try:
             response = cursor.fetchall()
             if not response:
@@ -20,17 +21,10 @@ def execute(connection, statement):
             if e.args and e.args[0] == 'no results to fetch':
                 # No response available (i.e. no response given)
                 return None
-            else:
-                # Some other PG error; re-raise
-                raise e
 
-        first_line = response[0]
-        if first_line[0].startswith('ERROR'):
-            # Error returned in response
-            msg = '\n'.join([' '.join(line) for line in response])
+            # Some other programming error; re-raise
+            raise e
 
-            raise DatabaseError(msg)
-
-        return result
+        return response
     finally:
         connection.autocommit = autocommit_setting

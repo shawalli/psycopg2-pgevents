@@ -16,10 +16,11 @@ def connection():
     # Create fresh test database
     _conn = connect(database=DEFAULT_DATABASE)
     _conn.autocommit = True
-    _curs = _conn.cursor()
 
+    _curs = _conn.cursor()
     _curs.execute('DROP DATABASE IF EXISTS {db}'.format(db=TEST_DATABASE))
     _curs.execute('CREATE DATABASE {db}'.format(db=TEST_DATABASE))
+    _conn.close()
 
     # Create test database connection
     conn = connect(database=TEST_DATABASE)
@@ -32,4 +33,6 @@ def connection():
 
         curs.execute(sql_contents)
 
-    return conn
+    yield conn
+
+    conn.close()
