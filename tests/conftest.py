@@ -36,3 +36,14 @@ def connection():
     yield conn
 
     conn.close()
+
+
+@fixture
+def client():
+    conn = connect(database=TEST_DATABASE)
+    conn.autocommit = True
+    curs = conn.cursor()
+
+    yield conn
+
+    conn.close()

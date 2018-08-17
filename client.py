@@ -24,7 +24,7 @@ try:
                 print(
                     'NOTIFY:{timestamp}:{pid}:{channel}: {message}'.format(
                         timestamp=datetime.datetime.now(),
-                        pid=notify.pid
+                        pid=notify.pid,
                         channel=notify.channel,
                         message=notify.payload
                     )
