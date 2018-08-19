@@ -23,7 +23,7 @@ SET search_path = "$user", public;
 """
 
 UNREGISTER_TRIGGER_FUNCTION = """
-DROP FUNCTION IF EXISTS public.pgevents() CASCADE;
+DROP FUNCTION IF EXISTS public.pgevents() {modifier};
 """
 
 REGISTER_TRIGGER_TEMPLATE = """
@@ -48,8 +48,12 @@ def register_trigger_function(connection):
     execute(connection, REGISTER_TRIGGER_FUNCTION)
 
 
-def unregister_trigger_function(connection):
-    execute(connection, UNREGISTER_TRIGGER_FUNCTION)
+def unregister_trigger_function(connection, force=False):
+    modifier = ''
+    if force:
+        modifier = 'CASCADE'
+    statement = UNREGISTER_TRIGGER_FUNCTION.format(modifier=modifier)
+    execute(connection, statement)
 
 
 def register_trigger(connection, table, schema='public'):

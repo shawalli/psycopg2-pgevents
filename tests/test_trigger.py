@@ -1,4 +1,4 @@
-from psycopg2 import ProgrammingError
+from psycopg2 import InternalError, ProgrammingError
 from pytest import fixture, mark
 
 from sqlalchemy_pgevents.base import execute
@@ -99,6 +99,55 @@ class TestTrigger:
             pass
 
         assert (trigger_registered == True)
+
+    @mark.usefixtures('trigger_fn_registered', 'public_schema_trigger_registered')
+    def test_remove_trigger_function_with_dependent_triggers(self, connection):
+        trigger_function_removal_failed = False
+        trigger_function_still_registered = False
+
+        try:
+            unregister_trigger_function(connection)
+        except InternalError:
+            trigger_function_removal_failed = True
+
+        try:
+            execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+            trigger_function_still_registered = True
+        except:
+            # Ignore error, its only use in this test is cause following
+            # assertion to fail
+            pass
+
+        assert (trigger_function_removal_failed == True)
+        assert (trigger_function_still_registered == True)
+
+    @mark.usefixtures('trigger_fn_registered', 'public_schema_trigger_registered')
+    def test_force_remove_trigger_function_with_dependent_triggers(self, connection):
+        trigger_function_still_registered = True
+        trigger_registered = False
+
+        unregister_trigger_function(connection, force=True)
+
+        try:
+            execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+        except ProgrammingError:
+            trigger_function_still_registered = False
+
+        statement = """
+        SELECT
+            *
+        FROM
+            information_schema.triggers
+        WHERE
+            event_object_schema = 'settings' AND
+            event_object_table = 'public';
+        """
+        result = execute(connection, statement)
+        if not result:
+            trigger_registered = False
+
+        assert (trigger_function_still_registered == False)
+        assert (trigger_registered == False)
 
     @mark.usefixtures('trigger_fn_registered', 'public_schema_trigger_registered')
     def test_remove_public_schema_trigger(self, connection):
