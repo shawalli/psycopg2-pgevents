@@ -1,9 +1,9 @@
 from psycopg2 import ProgrammingError
 from pytest import fixture, mark
 
-from sqlalchemy_pgevents.base import execute
-from sqlalchemy_pgevents.event import poll, register_event_channel, unregister_event_channel
-from sqlalchemy_pgevents.trigger import register_trigger, register_trigger_function
+from psycopg2_pgevents.base import execute
+from psycopg2_pgevents.event import poll, register_event_channel, unregister_event_channel
+from psycopg2_pgevents.trigger import register_trigger, register_trigger_function
 
 
 @fixture

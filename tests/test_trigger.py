@@ -1,8 +1,8 @@
 from psycopg2 import InternalError, ProgrammingError
 from pytest import fixture, mark
 
-from sqlalchemy_pgevents.base import execute
-from sqlalchemy_pgevents.trigger import register_trigger, register_trigger_function, unregister_trigger, \
+from psycopg2_pgevents.base import execute
+from psycopg2_pgevents.trigger import register_trigger, register_trigger_function, unregister_trigger, \
     unregister_trigger_function
 
 

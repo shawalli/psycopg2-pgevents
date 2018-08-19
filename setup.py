@@ -1,7 +1,7 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
-about_file = Path(Path(__file__).parent, 'sqlalchemy_pgevents', '__about__.py')
+about_file = Path(Path(__file__).parent, 'psycopg2_pgevents', '__about__.py')
 
 about = {}
 with open(about_file) as f:
@@ -18,7 +18,7 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'SQLAlchemy>=1.0'
+        'psycopg2>=2.7.5'
     ],
     tests_require=[
         'pytest',

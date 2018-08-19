@@ -1,7 +1,7 @@
 import json
 import select
 
-from sqlalchemy_pgevents.base import execute
+from psycopg2_pgevents.base import execute
 
 
 def register_event_channel(connection):

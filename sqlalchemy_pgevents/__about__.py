@@ -1,5 +1,5 @@
-__title__ = 'SQLAlchemy-PGEvents'
-__summary__ = 'Adds PostGreSQL LISTEN/NOTIFY functionality to SQLAlchemy'
+__title__ = 'psycopg2-pgevents'
+__summary__ = 'PostGreSQL LISTEN/NOTIFY functionality.'
 __uri__ = 'https://example.com'
 
 __version__ = '0.1.0'

@@ -1,6 +1,6 @@
 from psycopg2 import ProgrammingError
 
-from sqlalchemy_pgevents.base import execute
+from psycopg2_pgevents.base import execute
 
 
 class TestBase:
