@@ -1,4 +1,4 @@
-from psycopg2_pgevents.base import execute
+from psycopg2_pgevents.db import execute
 
 REGISTER_TRIGGER_FUNCTION = """
 SET search_path = public, pg_catalog;

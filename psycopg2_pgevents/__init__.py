@@ -5,5 +5,5 @@ from psycopg2_pgevents.__about__ import (
 )
 
 # temporary
-from psycopg2_pgevents.base import *
+from psycopg2_pgevents.db import *
 from psycopg2_pgevents.trigger import *
