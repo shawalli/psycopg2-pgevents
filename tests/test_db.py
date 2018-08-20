@@ -6,6 +6,7 @@ from psycopg2_pgevents.db import execute
 class TestBase:
     def test_execute(self, connection):
         results = execute(connection, 'SELECT * FROM pg_settings;')
+        assert(1 == 0)
 
         assert (results is not None)
 

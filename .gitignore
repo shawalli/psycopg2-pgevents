@@ -10,6 +10,7 @@ venv/
 *.egg-info/
 
 # Testing
+.mypy_cache/
 .pytest_cache/
 .tox/
 .coverage
