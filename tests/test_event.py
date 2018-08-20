@@ -3,7 +3,7 @@ from pytest import fixture, mark
 
 from psycopg2_pgevents.db import execute
 from psycopg2_pgevents.event import poll, register_event_channel, unregister_event_channel
-from psycopg2_pgevents.trigger import register_trigger, register_trigger_function
+from psycopg2_pgevents.trigger import install_trigger, install_trigger_function
 
 
 @fixture
@@ -12,10 +12,10 @@ def event_channel_registered(connection):
 
 
 @fixture
-def triggers_registered(connection):
-    register_trigger_function(connection)
-    register_trigger(connection, 'settings')
-    register_trigger(connection, 'orders', schema='pointofsale')
+def triggers_installed(connection):
+    install_trigger_function(connection)
+    install_trigger(connection, 'settings')
+    install_trigger(connection, 'orders', schema='pointofsale')
 
 
 def dump(connection, statement):
@@ -46,7 +46,7 @@ class TestEvent:
 
         assert (channel_registered == False)
 
-    @mark.usefixtures('triggers_registered', 'event_channel_registered')
+    @mark.usefixtures('triggers_installed', 'event_channel_registered')
     def test_poll_timeout(self, connection):
         num_notifications = 0
 
@@ -55,7 +55,7 @@ class TestEvent:
 
         assert (num_notifications == 0)
 
-    @mark.usefixtures('triggers_registered', 'event_channel_registered')
+    @mark.usefixtures('triggers_installed', 'event_channel_registered')
     def test_poll_public_schema_table_notification(self, connection, client):
         execute(client, "INSERT INTO public.settings(key, value) VALUES('foo', 1);")
 
@@ -72,7 +72,7 @@ class TestEvent:
         bad_notification_keys = set(notification.keys()).difference(set(('id', 'event', 'schema_name', 'table_name')))
         assert (len(bad_notification_keys) == 0)
 
-    @mark.usefixtures('triggers_registered', 'event_channel_registered')
+    @mark.usefixtures('triggers_installed', 'event_channel_registered')
     def test_poll_custom_schema_table_notification(self, connection, client):
         execute(client, "INSERT INTO pointofsale.orders(description) VALUES('bar');")
 
@@ -89,7 +89,7 @@ class TestEvent:
         bad_notification_keys = set(notification.keys()).difference(set(('id', 'event', 'schema_name', 'table_name')))
         assert (len(bad_notification_keys) == 0)
 
-    @mark.usefixtures('triggers_registered', 'event_channel_registered')
+    @mark.usefixtures('triggers_installed', 'event_channel_registered')
     def test_poll_notification_event_types(self, connection, client):
         execute(client, "INSERT INTO public.settings(key, value) VALUES('foo', 1);")
 
@@ -125,7 +125,7 @@ class TestEvent:
         assert (notification['schema_name'] == 'public')
         assert (notification['table_name'] == 'settings')
 
-    @mark.usefixtures('triggers_registered', 'event_channel_registered')
+    @mark.usefixtures('triggers_installed', 'event_channel_registered')
     def test_poll_multiple_table_notifications(self, connection, client):
         execute(client, "INSERT INTO public.settings(key, value) VALUES('foo', 1);")
         execute(client, "INSERT INTO pointofsale.orders(description) VALUES('bar');")

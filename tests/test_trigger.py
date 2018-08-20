@@ -2,57 +2,57 @@ from psycopg2 import InternalError, ProgrammingError
 from pytest import fixture, mark
 
 from psycopg2_pgevents.db import execute
-from psycopg2_pgevents.trigger import register_trigger, register_trigger_function, unregister_trigger, \
-    unregister_trigger_function
+from psycopg2_pgevents.trigger import install_trigger, install_trigger_function, uninstall_trigger, \
+    uninstall_trigger_function
 
 
 @fixture
-def trigger_fn_registered(connection):
-    register_trigger_function(connection)
+def trigger_fn_installed(connection):
+    install_trigger_function(connection)
 
 
 @fixture
-def public_schema_trigger_registered(connection):
-    register_trigger(connection, 'settings')
+def public_schema_trigger_installed(connection):
+    install_trigger(connection, 'settings')
 
 
 @fixture
-def custom_schema_trigger_registered(connection):
-    register_trigger(connection, 'orders', schema='pointofsale')
+def custom_schema_trigger_installed(connection):
+    install_trigger(connection, 'orders', schema='pointofsale')
 
 
 class TestTrigger:
     def test_add_trigger_function(self, connection):
-        trigger_function_registered = False
+        trigger_function_installed = False
 
-        register_trigger_function(connection)
+        install_trigger_function(connection)
         try:
             execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
-            trigger_function_registered = True
+            trigger_function_installed = True
         except:
             # Ignore error, its only use in this test is cause following
             # assertion to fail
             pass
 
-        assert (trigger_function_registered == True)
+        assert (trigger_function_installed == True)
 
-    @mark.usefixtures('trigger_fn_registered')
+    @mark.usefixtures('trigger_fn_installed')
     def test_remove_trigger_function(self, connection):
-        trigger_function_registered = True
+        trigger_function_installed = True
 
-        unregister_trigger_function(connection)
+        uninstall_trigger_function(connection)
         try:
             execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
         except ProgrammingError:
-            trigger_function_registered = False
+            trigger_function_installed = False
 
-        assert (trigger_function_registered == False)
+        assert (trigger_function_installed == False)
 
-    @mark.usefixtures('trigger_fn_registered')
+    @mark.usefixtures('trigger_fn_installed')
     def test_add_public_schema_trigger(self, connection):
-        trigger_registered = False
+        trigger_installed = False
 
-        register_trigger(connection, 'settings')
+        install_trigger(connection, 'settings')
 
         try:
             statement = """
@@ -66,19 +66,19 @@ class TestTrigger:
             """
             result = execute(connection, statement)
             if result:
-                trigger_registered = True
+                trigger_installed = True
         except:
             # Ignore error, its only use in this test is cause following
             # assertion to fail
             pass
 
-        assert (trigger_registered == True)
+        assert (trigger_installed == True)
 
-    @mark.usefixtures('trigger_fn_registered')
+    @mark.usefixtures('trigger_fn_installed')
     def test_add_custom_schema_trigger(self, connection):
-        trigger_registered = False
+        trigger_installed = False
 
-        register_trigger(connection, 'orders', schema='pointofsale')
+        install_trigger(connection, 'orders', schema='pointofsale')
 
         try:
             statement = """
@@ -92,46 +92,46 @@ class TestTrigger:
             """
             result = execute(connection, statement)
             if result:
-                trigger_registered = True
+                trigger_installed = True
         except:
             # Ignore error, its only use in this test is cause following
             # assertion to fail
             pass
 
-        assert (trigger_registered == True)
+        assert (trigger_installed == True)
 
-    @mark.usefixtures('trigger_fn_registered', 'public_schema_trigger_registered')
+    @mark.usefixtures('trigger_fn_installed', 'public_schema_trigger_installed')
     def test_remove_trigger_function_with_dependent_triggers(self, connection):
         trigger_function_removal_failed = False
-        trigger_function_still_registered = False
+        trigger_function_still_installed = False
 
         try:
-            unregister_trigger_function(connection)
+            uninstall_trigger_function(connection)
         except InternalError:
             trigger_function_removal_failed = True
 
         try:
             execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
-            trigger_function_still_registered = True
+            trigger_function_still_installed = True
         except:
             # Ignore error, its only use in this test is cause following
             # assertion to fail
             pass
 
         assert (trigger_function_removal_failed == True)
-        assert (trigger_function_still_registered == True)
+        assert (trigger_function_still_installed == True)
 
-    @mark.usefixtures('trigger_fn_registered', 'public_schema_trigger_registered')
+    @mark.usefixtures('trigger_fn_installed', 'public_schema_trigger_installed')
     def test_force_remove_trigger_function_with_dependent_triggers(self, connection):
-        trigger_function_still_registered = True
-        trigger_registered = False
+        trigger_function_still_installed = True
+        trigger_installed = False
 
-        unregister_trigger_function(connection, force=True)
+        uninstall_trigger_function(connection, force=True)
 
         try:
             execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
         except ProgrammingError:
-            trigger_function_still_registered = False
+            trigger_function_still_installed = False
 
         statement = """
         SELECT
@@ -144,16 +144,16 @@ class TestTrigger:
         """
         result = execute(connection, statement)
         if not result:
-            trigger_registered = False
+            trigger_installed = False
 
-        assert (trigger_function_still_registered == False)
-        assert (trigger_registered == False)
+        assert (trigger_function_still_installed == False)
+        assert (trigger_installed == False)
 
-    @mark.usefixtures('trigger_fn_registered', 'public_schema_trigger_registered')
+    @mark.usefixtures('trigger_fn_installed', 'public_schema_trigger_installed')
     def test_remove_public_schema_trigger(self, connection):
-        trigger_registered = True
+        trigger_installed = True
 
-        unregister_trigger(connection, 'settings')
+        uninstall_trigger(connection, 'settings')
         statement = """
         SELECT
             *
@@ -165,15 +165,15 @@ class TestTrigger:
         """
         result = execute(connection, statement)
         if not result:
-            trigger_registered = False
+            trigger_installed = False
 
-        assert (trigger_registered == False)
+        assert (trigger_installed == False)
 
-    @mark.usefixtures('trigger_fn_registered', 'custom_schema_trigger_registered')
+    @mark.usefixtures('trigger_fn_installed', 'custom_schema_trigger_installed')
     def test_remove_custom_schema_trigger(self, connection):
-        trigger_registered = True
+        trigger_installed = True
 
-        unregister_trigger(connection, 'orders', schema='pointofsale')
+        uninstall_trigger(connection, 'orders', schema='pointofsale')
         statement = """
         SELECT
             *
@@ -185,6 +185,6 @@ class TestTrigger:
         """
         result = execute(connection, statement)
         if not result:
-            trigger_registered = False
+            trigger_installed = False
 
-        assert (trigger_registered == False)
+        assert (trigger_installed == False)

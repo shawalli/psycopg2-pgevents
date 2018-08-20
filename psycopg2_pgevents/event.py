@@ -1,12 +1,10 @@
 """This module provides functionality for managing and polling for events."""
 import json
 import select
-from typing import Dict, Iterable, TYPE_CHECKING
+from typing import Dict, Iterable
 
 from psycopg2_pgevents.db import execute
-
-if TYPE_CHECKING:
-    from psycopg2.extensions import connection
+from psycopg2.extensions import connection
 
 __all__ = ['poll', 'register_event_channel', 'unregister_event_channel']
 

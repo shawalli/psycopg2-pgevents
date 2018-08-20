@@ -1,10 +1,8 @@
 """This module provides functionality for interacting directly with the database."""
-from typing import List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Tuple
 
 from psycopg2 import ProgrammingError
-
-if TYPE_CHECKING:
-    from psycopg2.extensions import connection
+from psycopg2.extensions import connection
 
 
 __all__ = ['execute']

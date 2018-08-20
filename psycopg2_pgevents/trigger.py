@@ -1,14 +1,10 @@
 """This module provides functionality for managing triggers."""
-from typing import TYPE_CHECKING
-
 from psycopg2_pgevents.db import execute
+from psycopg2.extensions import connection
 
-if TYPE_CHECKING:
-    from psycopg2.extensions import connection
+__all__ = ['install_trigger', 'install_trigger_function', 'uninstall_trigger', 'uninstall_trigger_function']
 
-__all__ = ['register_trigger', 'register_trigger_function', 'unregister_trigger', 'unregister_trigger_function']
-
-REGISTER_TRIGGER_FUNCTION_STATEMENT = """
+INSTALL_TRIGGER_FUNCTION_STATEMENT = """
 SET search_path = public, pg_catalog;
 
 CREATE OR REPLACE FUNCTION pgevents()
@@ -38,11 +34,11 @@ LANGUAGE plpgsql;
 SET search_path = "$user", public;
 """
 
-UNREGISTER_TRIGGER_FUNCTION_STATEMENT = """
+UNINSTALL_TRIGGER_FUNCTION_STATEMENT = """
 DROP FUNCTION IF EXISTS public.pgevents() {modifier};
 """
 
-REGISTER_TRIGGER_STATEMENT_TEMPLATE = """
+INSTALL_TRIGGER_STATEMENT_TEMPLATE = """
 SET search_path = {schema}, pg_catalog;
 
 DROP TRIGGER IF EXISTS pgevents ON {schema}.{table};
@@ -55,13 +51,13 @@ EXECUTE PROCEDURE public.pgevents();
 SET search_path = "$user", public;
 """
 
-UNREGISTER_TRIGGER_STATEMENT_TEMPLATE = """
+UNINSTALL_TRIGGER_STATEMENT_TEMPLATE = """
 DROP TRIGGER IF EXISTS pgevents ON {schema}.{table};
 """
 
 
-def register_trigger_function(connection: connection) -> None:
-    """Register the pgevents trigger function against the database.
+def install_trigger_function(connection: connection) -> None:
+    """Install the pgevents trigger function against the database.
 
     Parameters
     ----------
@@ -73,18 +69,18 @@ def register_trigger_function(connection: connection) -> None:
     None
 
     """
-    execute(connection, REGISTER_TRIGGER_FUNCTION_STATEMENT)
+    execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT)
 
 
-def unregister_trigger_function(connection: connection, force: bool=False) -> None:
-    """Register the pgevents trigger function against the database.
+def uninstall_trigger_function(connection: connection, force: bool=False) -> None:
+    """Uninstall the pgevents trigger function from the database.
 
     Parameters
     ----------
     connection: psycopg2.extensions.connection
         Active connection to a PostGreSQL database.
     force: bool
-        If True, force the un-registration even if dependent triggers are still registered.
+        If True, force the un-registration even if dependent triggers are still installed.
         If False, if there are any dependent triggers for the trigger function, the un-registration will fail
 
     Returns
@@ -95,19 +91,19 @@ def unregister_trigger_function(connection: connection, force: bool=False) -> No
     modifier = ''
     if force:
         modifier = 'CASCADE'
-    statement = UNREGISTER_TRIGGER_FUNCTION_STATEMENT.format(modifier=modifier)
+    statement = UNINSTALL_TRIGGER_FUNCTION_STATEMENT.format(modifier=modifier)
     execute(connection, statement)
 
 
-def register_trigger(connection: connection, table: str, schema: str='public') -> None:
-    """Register a pgevents trigger against a table.
+def install_trigger(connection: connection, table: str, schema: str='public') -> None:
+    """Install a pgevents trigger against a table.
 
     Parameters
     ----------
     connection: psycopg2.extensions.connection
         Active connection to a PostGreSQL database.
     table: str
-        Table for which the trigger should be registered.
+        Table for which the trigger should be installed.
     schema: str
         Schema to which the table belongs.
 
@@ -116,22 +112,22 @@ def register_trigger(connection: connection, table: str, schema: str='public') -
     None
 
     """
-    statement = REGISTER_TRIGGER_STATEMENT_TEMPLATE.format(
+    statement = INSTALL_TRIGGER_STATEMENT_TEMPLATE.format(
         schema=schema,
         table=table
     )
     execute(connection, statement)
 
 
-def unregister_trigger(connection: connection, table: str, schema: str='public') -> None:
-    """Un-register a pgevents trigger from a table.
+def uninstall_trigger(connection: connection, table: str, schema: str='public') -> None:
+    """Uninstall a pgevents trigger from a table.
 
     Parameters
     ----------
     connection: psycopg2.extensions.connection
         Active connection to a PostGreSQL database.
     table: str
-        Table for which the trigger should be un-registered.
+        Table for which the trigger should be uninstalled.
     schema: str
         Schema to which the table belongs.
 
@@ -140,7 +136,7 @@ def unregister_trigger(connection: connection, table: str, schema: str='public')
     None
 
     """
-    statement = UNREGISTER_TRIGGER_STATEMENT_TEMPLATE.format(
+    statement = UNINSTALL_TRIGGER_STATEMENT_TEMPLATE.format(
         schema=schema,
         table=table
     )
