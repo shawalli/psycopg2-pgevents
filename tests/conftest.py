@@ -7,8 +7,7 @@ from pytest import fixture
 DEFAULT_DATABASE = 'postgres'
 TEST_DATABASE = 'test'
 
-DATABASE_SHAPE_SQL_FILE = Path(
-    Path(__file__).parent, 'resources', 'database_shape.sql')
+DATABASE_SHAPE_SQL_FILE = Path(Path(__file__).parent, 'resources', 'database_shape.sql')
 
 
 @fixture

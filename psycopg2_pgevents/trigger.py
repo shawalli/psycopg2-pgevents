@@ -1,8 +1,14 @@
 """This module provides functionality for managing triggers."""
-from psycopg2_pgevents.db import execute
+__all__ = ['install_trigger', 'install_trigger_function', 'trigger_function_installed', 'trigger_installed',
+           'uninstall_trigger', 'uninstall_trigger_function'
+           ]
+
+
+from psycopg2 import ProgrammingError
 from psycopg2.extensions import connection
 
-__all__ = ['install_trigger', 'install_trigger_function', 'uninstall_trigger', 'uninstall_trigger_function']
+from psycopg2_pgevents.db import execute
+
 
 INSTALL_TRIGGER_FUNCTION_STATEMENT = """
 SET search_path = public, pg_catalog;
@@ -38,7 +44,7 @@ UNINSTALL_TRIGGER_FUNCTION_STATEMENT = """
 DROP FUNCTION IF EXISTS public.pgevents() {modifier};
 """
 
-INSTALL_TRIGGER_STATEMENT_TEMPLATE = """
+INSTALL_TRIGGER_STATEMENT = """
 SET search_path = {schema}, pg_catalog;
 
 DROP TRIGGER IF EXISTS pgevents ON {schema}.{table};
@@ -51,13 +57,23 @@ EXECUTE PROCEDURE public.pgevents();
 SET search_path = "$user", public;
 """
 
-UNINSTALL_TRIGGER_STATEMENT_TEMPLATE = """
+UNINSTALL_TRIGGER_STATEMENT = """
 DROP TRIGGER IF EXISTS pgevents ON {schema}.{table};
 """
 
+SELECT_TRIGGER_STATEMENT = """
+SELECT
+    *
+FROM
+    information_schema.triggers
+WHERE
+    event_object_schema = '{schema}' AND
+    event_object_table = '{table}';
+"""
 
-def install_trigger_function(connection: connection) -> None:
-    """Install the pgevents trigger function against the database.
+
+def trigger_function_installed(connection: connection):
+    """Test whether or not the pgevents trigger function is installed.
 
     Parameters
     ----------
@@ -66,10 +82,86 @@ def install_trigger_function(connection: connection) -> None:
 
     Returns
     -------
+    bool
+        True if the trigger function is installed, otherwise False.
+
+    """
+    installed = False
+    try:
+        execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+        installed = True
+    except ProgrammingError as e:
+        if e.args:
+            error_stdout = e.args[0].splitlines()
+            error = error_stdout.pop(0)
+            if error.endswith('does not exist'):
+                # Trigger function not installed
+                pass
+            else:
+                # Some other exception; re-raise
+                raise e
+        else:
+            # Some other exception; re-raise
+            raise e
+
+    return installed
+
+
+def trigger_installed(connection: connection, table: str, schema: str='public'):
+    """Test whether or not a pgevents trigger is installed for a table.
+
+    Parameters
+    ----------
+    connection: psycopg2.extensions.connection
+        Active connection to a PostGreSQL database.
+    table: str
+        Table whose trigger-existence will be checked.
+    schema: str
+        Schema to which the table belongs.
+
+    Returns
+    -------
+    bool
+        True if the trigger is installed, otherwise False.
+
+    """
+    installed = False
+
+    statement = SELECT_TRIGGER_STATEMENT.format(
+        table=table,
+        schema=schema
+    )
+
+    result = execute(connection, statement)
+    if result:
+        installed = True
+
+    return installed
+
+
+def install_trigger_function(connection: connection, overwrite: bool=False) -> None:
+    """Install the pgevents trigger function against the database.
+
+    Parameters
+    ----------
+    connection: psycopg2.extensions.connection
+        Active connection to a PostGreSQL database.
+    overwrite: bool
+        Whether or not to overwrite existing installation of pgevents trigger function, if existing installation is
+        found.
+
+    Returns
+    -------
     None
 
     """
-    execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT)
+    prior_install = False
+
+    if not overwrite:
+        prior_install = trigger_function_installed(connection)
+
+    if not prior_install:
+        execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT)
 
 
 def uninstall_trigger_function(connection: connection, force: bool=False) -> None:
@@ -80,8 +172,8 @@ def uninstall_trigger_function(connection: connection, force: bool=False) -> Non
     connection: psycopg2.extensions.connection
         Active connection to a PostGreSQL database.
     force: bool
-        If True, force the un-registration even if dependent triggers are still installed.
-        If False, if there are any dependent triggers for the trigger function, the un-registration will fail
+        If True, force the un-registration even if dependent triggers are still installed. If False, if there are any
+        dependent triggers for the trigger function, the un-registration will fail.
 
     Returns
     -------
@@ -95,7 +187,7 @@ def uninstall_trigger_function(connection: connection, force: bool=False) -> Non
     execute(connection, statement)
 
 
-def install_trigger(connection: connection, table: str, schema: str='public') -> None:
+def install_trigger(connection: connection, table: str, schema: str='public', overwrite: bool=False) -> None:
     """Install a pgevents trigger against a table.
 
     Parameters
@@ -106,17 +198,26 @@ def install_trigger(connection: connection, table: str, schema: str='public') ->
         Table for which the trigger should be installed.
     schema: str
         Schema to which the table belongs.
+    overwrite: bool
+        Whether or not to overwrite existing installation of trigger for the given table, if existing installation is
+        found.
 
     Returns
     -------
     None
 
     """
-    statement = INSTALL_TRIGGER_STATEMENT_TEMPLATE.format(
-        schema=schema,
-        table=table
-    )
-    execute(connection, statement)
+    prior_install = False
+
+    if not overwrite:
+        prior_install = trigger_installed(connection, table, schema)
+
+    if not prior_install:
+        statement = INSTALL_TRIGGER_STATEMENT.format(
+            schema=schema,
+            table=table
+        )
+        execute(connection, statement)
 
 
 def uninstall_trigger(connection: connection, table: str, schema: str='public') -> None:
@@ -136,7 +237,7 @@ def uninstall_trigger(connection: connection, table: str, schema: str='public') 
     None
 
     """
-    statement = UNINSTALL_TRIGGER_STATEMENT_TEMPLATE.format(
+    statement = UNINSTALL_TRIGGER_STATEMENT.format(
         schema=schema,
         table=table
     )

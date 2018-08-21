@@ -2,8 +2,8 @@ from psycopg2 import InternalError, ProgrammingError
 from pytest import fixture, mark
 
 from psycopg2_pgevents.db import execute
-from psycopg2_pgevents.trigger import install_trigger, install_trigger_function, uninstall_trigger, \
-    uninstall_trigger_function
+from psycopg2_pgevents.trigger import install_trigger, install_trigger_function, trigger_function_installed, \
+    trigger_installed, uninstall_trigger, uninstall_trigger_function
 
 
 @fixture
@@ -22,6 +22,24 @@ def custom_schema_trigger_installed(connection):
 
 
 class TestTrigger:
+    # TODO: add tests for install_trigger_function where:
+    #       - overwrite=False, prior_install=True
+    #       - overwrite=True, prior_install=True
+    # TODO: add tests for install_trigger where:
+    #       - overwrite=False, prior_install=True
+    #       - overwrite=True, prior_install=True
+
+    def test_trigger_function_not_installed(self, connection):
+        installed = trigger_function_installed(connection)
+
+        assert (installed == False)
+
+    @mark.usefixtures('trigger_fn_installed')
+    def test_trigger_function_installed(self, connection):
+        installed = trigger_function_installed(connection)
+
+        assert (installed == True)
+
     def test_add_trigger_function(self, connection):
         trigger_function_installed = False
 
@@ -99,6 +117,17 @@ class TestTrigger:
             pass
 
         assert (trigger_installed == True)
+
+    def test_trigger_not_installed(self, connection):
+        installed = trigger_installed(connection, 'settings')
+
+        assert (installed == False)
+
+    @mark.usefixtures('trigger_fn_installed', 'public_schema_trigger_installed')
+    def test_trigger_installed(self, connection):
+        installed = trigger_installed(connection, 'settings')
+
+        assert (installed == True)
 
     @mark.usefixtures('trigger_fn_installed', 'public_schema_trigger_installed')
     def test_remove_trigger_function_with_dependent_triggers(self, connection):

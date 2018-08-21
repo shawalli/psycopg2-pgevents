@@ -1,12 +1,13 @@
 """This module provides functionality for managing and polling for events."""
+__all__ = ['poll', 'register_event_channel', 'unregister_event_channel']
+
+
 import json
 import select
 from typing import Dict, Iterable
 
 from psycopg2_pgevents.db import execute
 from psycopg2.extensions import connection
-
-__all__ = ['poll', 'register_event_channel', 'unregister_event_channel']
 
 
 def register_event_channel(connection: connection) -> None:

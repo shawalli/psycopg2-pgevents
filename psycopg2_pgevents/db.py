@@ -1,11 +1,11 @@
 """This module provides functionality for interacting directly with the database."""
+__all__ = ['execute']
+
+
 from typing import List, Optional, Tuple
 
 from psycopg2 import ProgrammingError
 from psycopg2.extensions import connection
-
-
-__all__ = ['execute']
 
 
 def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, ...]]]:
