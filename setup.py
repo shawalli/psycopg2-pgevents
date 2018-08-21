@@ -1,5 +1,5 @@
 from pathlib import Path
-from setuptools import setup, find_packages
+from setuptools import setup
 
 about_file = Path(Path(__file__).parent, 'psycopg2_pgevents', '__about__.py')
 

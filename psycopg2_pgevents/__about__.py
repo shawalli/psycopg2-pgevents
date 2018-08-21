@@ -1,7 +1,7 @@
 """This module contains information about this package."""
 __title__ = 'psycopg2-pgevents'
 __summary__ = 'PostGreSQL LISTEN/NOTIFY functionality, via psycopg2.'
-__uri__ = 'https://example.com'
+__uri__ = 'https://github.com/shawalli/psycopg2-pgevents'
 
 __version__ = '0.1.0'
 
