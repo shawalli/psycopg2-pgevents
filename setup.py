@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+"""
+psycopg2-pgevents
+-----------------
+
+Adds event notification support for PostGreSQL databases via psycopg2 and
+NOTIFY/LISTEN.
+"""
 from pathlib import Path
 from setuptools import setup
 
@@ -15,6 +23,7 @@ setup(
     author_email=about['__email__'],
     url=about['__uri__'],
     license=about['__license__'],
+    packages=['psycopg2_pgevents'],
     zip_safe=False,
     platforms='any',
     install_requires=[
