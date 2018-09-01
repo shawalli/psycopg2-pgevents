@@ -43,5 +43,7 @@ def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, 
 
         # Some other programming error; re-raise
         raise e
+    finally:
+        cursor.close()
 
     return response
