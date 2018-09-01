@@ -18,10 +18,6 @@ def triggers_installed(connection):
     install_trigger(connection, 'orders', schema='pointofsale')
 
 
-def dump(connection, statement):
-    print(execute(connection, statement))
-
-
 class TestEvent:
     def test_register_event_channel(self, connection):
         channel_registered = False
