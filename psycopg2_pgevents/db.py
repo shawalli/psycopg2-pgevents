@@ -27,23 +27,30 @@ def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, 
     """
     response = list()  # type: List
 
-    cursor = connection.cursor()
-    cursor.execute(statement)
+    # See the following link for reasoning behind both with statements:
+    #   http://initd.org/psycopg/docs/usage.html#with-statement
+    #
+    # Additionally, the with statement makes this library safer to use with
+    # higher-level libraries (e.g. SQLAlchemy) that don't inherently respect
+    # PostGreSQL's autocommit isolation-level, since the transaction is
+    # properly completed for each statement.
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(statement)
+            connection.commit()
 
-    # Get response
-    try:
-        response = cursor.fetchall()
-        if not response:
-            # Empty response list
-            return None
-    except ProgrammingError as e:
-        if e.args and e.args[0] == 'no results to fetch':
-            # No response available (i.e. no response given)
-            return None
+            # Get response
+            try:
+                response = cursor.fetchall()
+                if not response:
+                    # Empty response list
+                    return None
+            except ProgrammingError as e:
+                if e.args and e.args[0] == 'no results to fetch':
+                    # No response available (i.e. no response given)
+                    return None
 
-        # Some other programming error; re-raise
-        raise e
-    finally:
-        cursor.close()
+                # Some other programming error; re-raise
+                raise e
 
     return response
