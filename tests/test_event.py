@@ -1,8 +1,10 @@
+import json
+
 from psycopg2 import ProgrammingError
 from pytest import fixture, mark
 
 from psycopg2_pgevents.db import execute
-from psycopg2_pgevents.event import poll, register_event_channel, unregister_event_channel
+from psycopg2_pgevents.event import Event, poll, register_event_channel, unregister_event_channel
 from psycopg2_pgevents.trigger import install_trigger, install_trigger_function
 
 
@@ -19,6 +21,37 @@ def triggers_installed(connection):
 
 
 class TestEvent:
+    def test_event_fromjson(self):
+        json_string = """
+        {
+            "event": "insert",
+            "schema_name": "public",
+            "table_name": "widget",
+            "id": "1"
+        }
+        """
+
+        evt = Event.fromjson(json_string)
+        assert (evt.event == 'insert')
+        assert (evt.schema_name == 'public')
+        assert (evt.table_name == 'widget')
+        assert (evt.id == '1')
+
+    def test_event_tojson(self):
+        evt = Event(
+            'insert',
+            'public',
+            'widget',
+            '1'
+        )
+
+        json_string = evt.tojson()
+        json_dict = json.loads(json_string)
+        assert (json_dict['event'] == evt.event)
+        assert (json_dict['schema_name'] == evt.schema_name)
+        assert (json_dict['table_name'] == evt.table_name)
+        assert (json_dict['id'] == evt.id)
+
     def test_register_event_channel(self, connection):
         channel_registered = False
 
@@ -44,97 +77,88 @@ class TestEvent:
 
     @mark.usefixtures('triggers_installed', 'event_channel_registered')
     def test_poll_timeout(self, connection):
-        num_notifications = 0
+        num_events = 0
 
-        for notification in poll(connection):
-            num_notifications += 1
+        for event in poll(connection):
+            num_events += 1
 
-        assert (num_notifications == 0)
+        assert (num_events == 0)
 
     @mark.usefixtures('triggers_installed', 'event_channel_registered')
-    def test_poll_public_schema_table_notification(self, connection, client):
+    def test_poll_public_schema_table_event(self, connection, client):
         execute(client, "INSERT INTO public.settings(key, value) VALUES('foo', 1);")
 
-        notifications = [notification for notification in poll(connection)]
+        events = [event for event in poll(connection)]
 
-        assert (len(notifications) == 1)
+        assert (len(events) == 1)
 
-        notification = notifications.pop()
+        event = events.pop()
 
-        assert (notification['event'] == 'INSERT')
-        assert (notification['schema_name'] == 'public')
-        assert (notification['table_name'] == 'settings')
-
-        bad_notification_keys = set(notification.keys()).difference(set(('id', 'event', 'schema_name', 'table_name')))
-        assert (len(bad_notification_keys) == 0)
+        assert (event.event == 'INSERT')
+        assert (event.schema_name == 'public')
+        assert (event.table_name == 'settings')
 
     @mark.usefixtures('triggers_installed', 'event_channel_registered')
-    def test_poll_custom_schema_table_notification(self, connection, client):
+    def test_poll_custom_schema_table_event(self, connection, client):
         execute(client, "INSERT INTO pointofsale.orders(description) VALUES('bar');")
 
-        notifications = [notification for notification in poll(connection)]
+        events = [event for event in poll(connection)]
 
-        assert (len(notifications) == 1)
+        assert (len(events) == 1)
 
-        notification = notifications.pop()
+        event = events.pop()
 
-        assert (notification['event'] == 'INSERT')
-        assert (notification['schema_name'] == 'pointofsale')
-        assert (notification['table_name'] == 'orders')
-
-        bad_notification_keys = set(notification.keys()).difference(set(('id', 'event', 'schema_name', 'table_name')))
-        assert (len(bad_notification_keys) == 0)
+        assert (event.event == 'INSERT')
+        assert (event.schema_name == 'pointofsale')
+        assert (event.table_name == 'orders')
 
     @mark.usefixtures('triggers_installed', 'event_channel_registered')
-    def test_poll_notification_event_types(self, connection, client):
+    def test_poll_event_event_types(self, connection, client):
         execute(client, "INSERT INTO public.settings(key, value) VALUES('foo', 1);")
 
-        notifications = [notification for notification in poll(connection)]
+        events = [event for event in poll(connection)]
 
-        assert (len(notifications) == 1)
+        assert (len(events) == 1)
 
-        notification = notifications.pop()
+        event = events.pop()
 
-        assert (notification['event'] == 'INSERT')
-        assert (notification['schema_name'] == 'public')
-        assert (notification['table_name'] == 'settings')
+        assert (event.event == 'INSERT')
+        assert (event.schema_name == 'public')
+        assert (event.table_name == 'settings')
 
-        bad_notification_keys = set(notification.keys()).difference(set(('id', 'event', 'schema_name', 'table_name')))
-        assert (len(bad_notification_keys) == 0)
+        execute(client, "UPDATE public.settings SET value = 2 WHERE id = {row_id};".format(row_id=event.id))
+        execute(client, "DELETE FROM public.settings WHERE id = {row_id};".format(row_id=event.id))
 
-        execute(client, "UPDATE public.settings SET value = 2 WHERE id = {row_id};".format(row_id=notification['id']))
-        execute(client, "DELETE FROM public.settings WHERE id = {row_id};".format(row_id=notification['id']))
+        events = [event for event in poll(connection)]
 
-        notifications = [notification for notification in poll(connection)]
+        assert (len(events) == 2)
 
-        assert (len(notifications) == 2)
+        event = events.pop()
 
-        notification = notifications.pop()
+        assert (event.event == 'UPDATE')
+        assert (event.schema_name == 'public')
+        assert (event.table_name == 'settings')
 
-        assert (notification['event'] == 'UPDATE')
-        assert (notification['schema_name'] == 'public')
-        assert (notification['table_name'] == 'settings')
+        event = events.pop()
 
-        notification = notifications.pop()
-
-        assert (notification['event'] == 'DELETE')
-        assert (notification['schema_name'] == 'public')
-        assert (notification['table_name'] == 'settings')
+        assert (event.event == 'DELETE')
+        assert (event.schema_name == 'public')
+        assert (event.table_name == 'settings')
 
     @mark.usefixtures('triggers_installed', 'event_channel_registered')
-    def test_poll_multiple_table_notifications(self, connection, client):
+    def test_poll_multiple_table_events(self, connection, client):
         execute(client, "INSERT INTO public.settings(key, value) VALUES('foo', 1);")
         execute(client, "INSERT INTO pointofsale.orders(description) VALUES('bar');")
-        notifications = [notification for notification in poll(connection)]
+        events = [event for event in poll(connection)]
 
-        assert (len(notifications) == 2)
+        assert (len(events) == 2)
 
-        notification = notifications.pop()
-        assert (notification['event'] == 'INSERT')
-        assert (notification['schema_name'] == 'public')
-        assert (notification['table_name'] == 'settings')
+        event = events.pop()
+        assert (event.event == 'INSERT')
+        assert (event.schema_name == 'public')
+        assert (event.table_name == 'settings')
 
-        notification = notifications.pop()
-        assert (notification['event'] == 'INSERT')
-        assert (notification['schema_name'] == 'pointofsale')
-        assert (notification['table_name'] == 'orders')
+        event = events.pop()
+        assert (event.event == 'INSERT')
+        assert (event.schema_name == 'pointofsale')
+        assert (event.table_name == 'orders')
