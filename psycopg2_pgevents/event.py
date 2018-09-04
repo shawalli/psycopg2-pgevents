@@ -17,7 +17,7 @@ class Event:
     table_name: str
     row_id: str
 
-    def __init__(self, type_: str, schema_name: str, table_name: str, row_id: str):
+    def __init__(self, type_: str, schema_name: str, table_name: str, row_id: str) -> None:
         """Initialize a new Event.
 
         Parameters
@@ -114,7 +114,7 @@ def unregister_event_channel(connection: connection) -> None:
     execute(connection, 'UNLISTEN "pgevents";')
 
 
-def poll(connection: connection, timeout: float=1.0) -> Iterable[Dict]:
+def poll(connection: connection, timeout: float=1.0) -> Iterable[Event]:
     """Poll the connection for notification events.
 
     This method operates as an iterable. It will keep returning events until all events have been read.
