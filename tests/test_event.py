@@ -24,18 +24,18 @@ class TestEvent:
     def test_event_fromjson(self):
         json_string = """
         {
-            "event": "insert",
+            "event_type": "insert",
             "schema_name": "public",
             "table_name": "widget",
-            "id": "1"
+            "row_id": "1"
         }
         """
 
         evt = Event.fromjson(json_string)
-        assert (evt.event == 'insert')
+        assert (evt.type == 'insert')
         assert (evt.schema_name == 'public')
         assert (evt.table_name == 'widget')
-        assert (evt.id == '1')
+        assert (evt.row_id == '1')
 
     def test_event_tojson(self):
         evt = Event(
@@ -47,10 +47,10 @@ class TestEvent:
 
         json_string = evt.tojson()
         json_dict = json.loads(json_string)
-        assert (json_dict['event'] == evt.event)
+        assert (json_dict['event_type'] == evt.type)
         assert (json_dict['schema_name'] == evt.schema_name)
         assert (json_dict['table_name'] == evt.table_name)
-        assert (json_dict['id'] == evt.id)
+        assert (json_dict['row_id'] == evt.row_id)
 
     def test_register_event_channel(self, connection):
         channel_registered = False
@@ -94,7 +94,7 @@ class TestEvent:
 
         event = events.pop()
 
-        assert (event.event == 'INSERT')
+        assert (event.type == 'INSERT')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
@@ -108,7 +108,7 @@ class TestEvent:
 
         event = events.pop()
 
-        assert (event.event == 'INSERT')
+        assert (event.type == 'INSERT')
         assert (event.schema_name == 'pointofsale')
         assert (event.table_name == 'orders')
 
@@ -122,12 +122,12 @@ class TestEvent:
 
         event = events.pop()
 
-        assert (event.event == 'INSERT')
+        assert (event.type == 'INSERT')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
-        execute(client, "UPDATE public.settings SET value = 2 WHERE id = {row_id};".format(row_id=event.id))
-        execute(client, "DELETE FROM public.settings WHERE id = {row_id};".format(row_id=event.id))
+        execute(client, "UPDATE public.settings SET value = 2 WHERE id = {row_id};".format(row_id=event.row_id))
+        execute(client, "DELETE FROM public.settings WHERE id = {row_id};".format(row_id=event.row_id))
 
         events = [event for event in poll(connection)]
 
@@ -135,13 +135,13 @@ class TestEvent:
 
         event = events.pop()
 
-        assert (event.event == 'UPDATE')
+        assert (event.type == 'UPDATE')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
         event = events.pop()
 
-        assert (event.event == 'DELETE')
+        assert (event.type == 'DELETE')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
@@ -154,11 +154,11 @@ class TestEvent:
         assert (len(events) == 2)
 
         event = events.pop()
-        assert (event.event == 'INSERT')
+        assert (event.type == 'INSERT')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
         event = events.pop()
-        assert (event.event == 'INSERT')
+        assert (event.type == 'INSERT')
         assert (event.schema_name == 'pointofsale')
         assert (event.table_name == 'orders')

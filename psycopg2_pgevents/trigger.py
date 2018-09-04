@@ -26,10 +26,10 @@ RETURNS TRIGGER AS $function$
     PERFORM pg_notify(
      'pgevents',
       json_build_object(
-        'event', TG_OP,
+        'event_type', TG_OP,
         'schema_name', TG_TABLE_SCHEMA,
         'table_name', TG_TABLE_NAME,
-        'id', row_id
+        'row_id', row_id
       )::text
     );
     RETURN NULL;

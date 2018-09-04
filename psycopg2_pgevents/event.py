@@ -12,23 +12,23 @@ from psycopg2.extensions import connection
 
 class Event:
     """Represent a psycopg2-pgevents event."""
-    event: str
+    type: str
     schema_name: str
     table_name: str
-    id: str
+    row_id: str
 
-    def __init__(self, event: str, schema_name: str, table_name: str, id: str):
+    def __init__(self, type_: str, schema_name: str, table_name: str, row_id: str):
         """Initialize a new Event.
 
         Parameters
         ----------
-        event: str
-            PostGreSQL event, one of 'INSERT', 'UPDATE', or 'DELETE'.
+        type_: str
+            PostGreSQL event type, one of 'INSERT', 'UPDATE', or 'DELETE'.
         schema_name: str
             Schema where the event occurred.
         table_name: str
             Table where event occurred.
-        id: str
+        row_id: str
             Row ID of event. This attribute is a string so that it can
             represent both regular id's and things like UUID's.
 
@@ -37,10 +37,10 @@ class Event:
         None
 
         """
-        self.event = event
+        self.type = type_
         self.schema_name = schema_name
         self.table_name = table_name
-        self.id = id
+        self.row_id = row_id
 
     @classmethod
     def fromjson(cls, json_string: str) -> 'Event':
@@ -59,10 +59,10 @@ class Event:
         """
         obj = json.loads(json_string)
         return cls(
-            obj['event'],
+            obj['event_type'],
             obj['schema_name'],
             obj['table_name'],
-            obj['id']
+            obj['row_id']
         )
 
     def tojson(self) -> str:
@@ -75,10 +75,10 @@ class Event:
 
         """
         return json.dumps({
-            'event': self.event,
+            'event_type': self.type,
             'schema_name': self.schema_name,
             'table_name': self.table_name,
-            'id': self.id
+            'row_id': self.row_id
         })
 
 
