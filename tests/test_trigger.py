@@ -45,7 +45,7 @@ class TestTrigger:
 
         install_trigger_function(connection)
         try:
-            execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+            execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
             trigger_function_installed = True
         except:
             # Ignore error, its only use in this test is cause following
@@ -60,7 +60,7 @@ class TestTrigger:
 
         uninstall_trigger_function(connection)
         try:
-            execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+            execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
         except ProgrammingError:
             trigger_function_installed = False
 
@@ -140,7 +140,7 @@ class TestTrigger:
             trigger_function_removal_failed = True
 
         try:
-            execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+            execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
             trigger_function_still_installed = True
         except:
             # Ignore error, its only use in this test is cause following
@@ -158,7 +158,7 @@ class TestTrigger:
         uninstall_trigger_function(connection, force=True)
 
         try:
-            execute(connection, "SELECT pg_get_functiondef('public.pgevents'::regproc);")
+            execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
         except ProgrammingError:
             trigger_function_still_installed = False
 

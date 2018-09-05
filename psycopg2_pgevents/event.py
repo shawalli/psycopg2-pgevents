@@ -83,7 +83,7 @@ class Event:
 
 
 def register_event_channel(connection: connection) -> None:
-    """Register pgevents event channel in the database.
+    """Register psycopg2-pgevents event channel in the database.
 
     Parameters
     ----------
@@ -95,11 +95,11 @@ def register_event_channel(connection: connection) -> None:
     None
 
     """
-    execute(connection, 'LISTEN "pgevents";')
+    execute(connection, 'LISTEN "psycopg2_pgevents_channel";')
 
 
 def unregister_event_channel(connection: connection) -> None:
-    """Un-register pgevents event channel from the database.
+    """Un-register psycopg2-pgevents event channel from the database.
 
     Parameters
     ----------
@@ -111,13 +111,14 @@ def unregister_event_channel(connection: connection) -> None:
     None
 
     """
-    execute(connection, 'UNLISTEN "pgevents";')
+    execute(connection, 'UNLISTEN "psycopg2_pgevents_channel";')
 
 
 def poll(connection: connection, timeout: float=1.0) -> Iterable[Event]:
     """Poll the connection for notification events.
 
-    This method operates as an iterable. It will keep returning events until all events have been read.
+    This method operates as an iterable. It will keep returning events until
+    all events have been read.
 
     Parameters
     ----------

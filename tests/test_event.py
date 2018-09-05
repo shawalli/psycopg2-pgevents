@@ -58,7 +58,7 @@ class TestEvent:
         register_event_channel(connection)
 
         results = execute(connection, 'SELECT pg_listening_channels();')
-        if results and 'pgevents' in results[0]:
+        if results and 'psycopg2_pgevents_channel' in results[0]:
             channel_registered = True
 
         assert (channel_registered == True)
