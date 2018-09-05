@@ -7,7 +7,7 @@ __all__ = ['install_trigger', 'install_trigger_function', 'trigger_function_inst
 from psycopg2 import ProgrammingError
 from psycopg2.extensions import connection
 
-from psycopg2_pgevents.db import execute
+from psycopg2_pgevents.sql import execute
 
 
 INSTALL_TRIGGER_FUNCTION_STATEMENT = """

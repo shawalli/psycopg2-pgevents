@@ -3,7 +3,7 @@ from psycopg2_pgevents.__about__ import __author__, __copyright__, __email__, __
     __title__, __uri__, __version__
 
 
-from psycopg2_pgevents.db import execute
+from psycopg2_pgevents.sql import execute
 from psycopg2_pgevents.event import poll, register_event_channel, unregister_event_channel
 from psycopg2_pgevents.trigger import install_trigger, install_trigger_function, trigger_function_installed, \
     trigger_installed, uninstall_trigger, uninstall_trigger_function

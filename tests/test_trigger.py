@@ -1,7 +1,7 @@
 from psycopg2 import InternalError, ProgrammingError
 from pytest import fixture, mark
 
-from psycopg2_pgevents.db import execute
+from psycopg2_pgevents.sql import execute
 from psycopg2_pgevents.trigger import install_trigger, install_trigger_function, trigger_function_installed, \
     trigger_installed, uninstall_trigger, uninstall_trigger_function
 

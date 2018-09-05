@@ -6,7 +6,7 @@ import json
 import select
 from typing import Dict, Iterable
 
-from psycopg2_pgevents.db import execute
+from psycopg2_pgevents.sql import execute
 from psycopg2.extensions import connection
 
 
