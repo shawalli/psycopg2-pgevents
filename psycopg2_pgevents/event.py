@@ -11,7 +11,20 @@ from psycopg2.extensions import connection
 
 
 class Event:
-    """Represent a psycopg2-pgevents event."""
+    """Represent a psycopg2-pgevents event.
+
+    Attributes
+    ----------
+    type: str
+        PostGreSQL event type, one of 'INSERT', 'UPDATE', or 'DELETE'.
+    schema_name: str
+        Schema in which the event occurred.
+    table_name: str
+        Table in which event occurred.
+    row_id: str
+        Row ID of event. This attribute is a string so that it can
+        represent both regular id's and things like UUID's.
+    """
     type: str
     schema_name: str
     table_name: str
@@ -25,9 +38,9 @@ class Event:
         type_: str
             PostGreSQL event type, one of 'INSERT', 'UPDATE', or 'DELETE'.
         schema_name: str
-            Schema where the event occurred.
+            Schema in which the event occurred.
         table_name: str
-            Table where event occurred.
+            Table in which event occurred.
         row_id: str
             Row ID of event. This attribute is a string so that it can
             represent both regular id's and things like UUID's.
