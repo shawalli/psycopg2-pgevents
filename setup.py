@@ -27,7 +27,7 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'psycopg2>=2.7.5'
+        'psycopg2-binary>=2.7.5'
     ],
     tests_require=[
         'pytest',
