@@ -3,7 +3,7 @@ from psycopg2 import ProgrammingError
 from psycopg2_pgevents.sql import execute
 
 
-class TestBase:
+class TestSql:
     def test_execute(self, connection):
         results = execute(connection, 'SELECT * FROM pg_settings;')
 

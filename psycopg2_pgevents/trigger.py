@@ -7,6 +7,7 @@ __all__ = ['install_trigger', 'install_trigger_function', 'trigger_function_inst
 from psycopg2 import ProgrammingError
 from psycopg2.extensions import connection
 
+from psycopg2_pgevents.debug import log
 from psycopg2_pgevents.sql import execute
 
 
@@ -87,6 +88,9 @@ def trigger_function_installed(connection: connection):
 
     """
     installed = False
+
+    log('Checking if trigger function installed...', logger='psycopg2-pgevents')
+
     try:
         execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
         installed = True
@@ -103,6 +107,8 @@ def trigger_function_installed(connection: connection):
         else:
             # Some other exception; re-raise
             raise e
+
+    log('...{}installed'.format('' if installed else 'NOT '), logger='psycopg2-pgevents')
 
     return installed
 
@@ -127,6 +133,8 @@ def trigger_installed(connection: connection, table: str, schema: str='public'):
     """
     installed = False
 
+    log('Checking if {}.{} trigger installed...'.format(schema, table), logger='psycopg2-pgevents')
+
     statement = SELECT_TRIGGER_STATEMENT.format(
         table=table,
         schema=schema
@@ -135,6 +143,8 @@ def trigger_installed(connection: connection, table: str, schema: str='public'):
     result = execute(connection, statement)
     if result:
         installed = True
+
+    log('...{}installed'.format('' if installed else 'NOT '), logger='psycopg2-pgevents')
 
     return installed
 
@@ -161,7 +171,11 @@ def install_trigger_function(connection: connection, overwrite: bool=False) -> N
         prior_install = trigger_function_installed(connection)
 
     if not prior_install:
+        log('Installing trigger function...', logger='psycopg2-pgevents')
+
         execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT)
+    else:
+        log('Trigger function already installed; skipping...', logger='psycopg2-pgevents')
 
 
 def uninstall_trigger_function(connection: connection, force: bool=False) -> None:
@@ -184,6 +198,9 @@ def uninstall_trigger_function(connection: connection, force: bool=False) -> Non
     modifier = ''
     if force:
         modifier = 'CASCADE'
+
+    log('Uninstalling trigger function (cascade={})...'.format(force), logger='psycopg2-pgevents')
+
     statement = UNINSTALL_TRIGGER_FUNCTION_STATEMENT.format(modifier=modifier)
     execute(connection, statement)
 
@@ -214,11 +231,15 @@ def install_trigger(connection: connection, table: str, schema: str='public', ov
         prior_install = trigger_installed(connection, table, schema)
 
     if not prior_install:
+        log('Installing {}.{} trigger...'.format(schema, table), logger='psycopg2-pgevents')
+
         statement = INSTALL_TRIGGER_STATEMENT.format(
             schema=schema,
             table=table
         )
         execute(connection, statement)
+    else:
+        log('{}.{} trigger already installed; skipping...'.format(schema, table), logger='psycopg2-pgevents')
 
 
 def uninstall_trigger(connection: connection, table: str, schema: str='public') -> None:
@@ -238,6 +259,8 @@ def uninstall_trigger(connection: connection, table: str, schema: str='public') 
     None
 
     """
+    log('Uninstalling {}.{} trigger...'.format(schema, table), logger='psycopg2-pgevents')
+
     statement = UNINSTALL_TRIGGER_STATEMENT.format(
         schema=schema,
         table=table

@@ -3,11 +3,22 @@ from pathlib import Path
 
 from psycopg2 import connect
 from pytest import fixture
+from testfixtures import LogCapture
+
+from psycopg2_pgevents.debug import set_debug
 
 DEFAULT_DATABASE = 'postgres'
 TEST_DATABASE = 'test'
 
 DATABASE_SHAPE_SQL_FILE = Path(Path(__file__).parent, 'resources', 'database_shape.sql')
+
+
+@fixture
+def log_capture():
+    set_debug(True)
+
+    with LogCapture() as capture:
+        yield capture
 
 
 @fixture

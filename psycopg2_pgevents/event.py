@@ -9,6 +9,8 @@ from typing import Dict, Iterable
 from psycopg2_pgevents.sql import execute
 from psycopg2.extensions import connection
 
+from psycopg2_pgevents.debug import log
+
 
 class Event:
     """Represent a psycopg2-pgevents event.
@@ -108,6 +110,7 @@ def register_event_channel(connection: connection) -> None:
     None
 
     """
+    log('Registering psycopg2-pgevents channel...', logger='psycopg2-pgevents')
     execute(connection, 'LISTEN "psycopg2_pgevents_channel";')
 
 
@@ -124,6 +127,7 @@ def unregister_event_channel(connection: connection) -> None:
     None
 
     """
+    log('Unregistering psycopg2-pgevents channel...', logger='psycopg2-pgevents')
     execute(connection, 'UNLISTEN "psycopg2_pgevents_channel";')
 
 
@@ -154,10 +158,19 @@ def poll(connection: connection, timeout: float=1.0) -> Iterable[Event]:
             print(evt)
 
     """
+
+    if timeout > 0.0:
+        log('Polling for events (Blocking, {} seconds)...'.format(timeout), logger='psycopg2-pgevents')
+    else:
+        log('Polling for events (Non-Blocking)...', logger='psycopg2-pgevents')
     if select.select([connection], [], [], timeout) == ([], [], []):
+        log('...No events found', logger='psycopg2-pgevents')
         return
     else:
+        log('Events', logger='psycopg2-pgevents')
+        log('------', logger='psycopg2-pgevents')
         connection.poll()
         while connection.notifies:
             event = connection.notifies.pop()
+            log(str(event), logger='psycopg2-pgevents')
             yield Event.fromjson(event.payload)

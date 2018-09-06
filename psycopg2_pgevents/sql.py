@@ -2,10 +2,27 @@
 __all__ = ['execute']
 
 
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from psycopg2 import ProgrammingError
-from psycopg2.extensions import connection
+from psycopg2.extensions import connection, cursor
+
+from psycopg2_pgevents.debug import log
+
+
+class Psycopg2Cursor(cursor):
+    def execute(self, query: str, args: Union[Dict, List, None]=None):
+        log('Query')
+        log('-----')
+        log(self.mogrify(query, args))
+
+        try:
+            super().execute(query, args)
+        except Exception as e:
+            log('Exception', category='error')
+            log('---------', category='error')
+            log('{name}: {msg}'.format(name=e.__class__.__name__, msg=str(e)), category='error')
+            raise
 
 
 def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, ...]]]:
@@ -35,7 +52,7 @@ def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, 
     # PostGreSQL's autocommit isolation-level, since the transaction is
     # properly completed for each statement.
     with connection:
-        with connection.cursor() as cursor:
+        with connection.cursor(cursor_factory=Psycopg2Cursor) as cursor:
             cursor.execute(statement)
             connection.commit()
 
@@ -44,13 +61,20 @@ def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, 
                 response = cursor.fetchall()
                 if not response:
                     # Empty response list
+                    log('<No Response>')
                     return None
             except ProgrammingError as e:
                 if e.args and e.args[0] == 'no results to fetch':
                     # No response available (i.e. no response given)
+                    log('<No Response>')
                     return None
 
                 # Some other programming error; re-raise
                 raise e
+
+            log('Response')
+            log('--------')
+            for line in response:
+                log(str(line))
 
     return response

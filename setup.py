@@ -31,7 +31,8 @@ setup(
     ],
     tests_require=[
         'pytest',
-        'pytest-cov'
+        'pytest-cov',
+        'testfixtures'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
