@@ -67,7 +67,7 @@ class TestDebug:
         assert (('psycopg2', 'INFO', 'foo bar baz 1') == logs.pop(0))
 
     def test_log_custom_logger(self, log_capture):
-        log('foo', logger='test')
+        log('foo', logger_name='test')
 
         logs = log_capture.actual()
 

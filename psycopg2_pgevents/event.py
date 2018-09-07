@@ -110,7 +110,7 @@ def register_event_channel(connection: connection) -> None:
     None
 
     """
-    log('Registering psycopg2-pgevents channel...', logger='psycopg2-pgevents')
+    log('Registering psycopg2-pgevents channel...', logger_name='psycopg2-pgevents')
     execute(connection, 'LISTEN "psycopg2_pgevents_channel";')
 
 
@@ -127,7 +127,7 @@ def unregister_event_channel(connection: connection) -> None:
     None
 
     """
-    log('Unregistering psycopg2-pgevents channel...', logger='psycopg2-pgevents')
+    log('Unregistering psycopg2-pgevents channel...', logger_name='psycopg2-pgevents')
     execute(connection, 'UNLISTEN "psycopg2_pgevents_channel";')
 
 
@@ -160,17 +160,17 @@ def poll(connection: connection, timeout: float=1.0) -> Iterable[Event]:
     """
 
     if timeout > 0.0:
-        log('Polling for events (Blocking, {} seconds)...'.format(timeout), logger='psycopg2-pgevents')
+        log('Polling for events (Blocking, {} seconds)...'.format(timeout), logger_name='psycopg2-pgevents')
     else:
-        log('Polling for events (Non-Blocking)...', logger='psycopg2-pgevents')
+        log('Polling for events (Non-Blocking)...', logger_name='psycopg2-pgevents')
     if select.select([connection], [], [], timeout) == ([], [], []):
-        log('...No events found', logger='psycopg2-pgevents')
+        log('...No events found', logger_name='psycopg2-pgevents')
         return
     else:
-        log('Events', logger='psycopg2-pgevents')
-        log('------', logger='psycopg2-pgevents')
+        log('Events', logger_name='psycopg2-pgevents')
+        log('------', logger_name='psycopg2-pgevents')
         connection.poll()
         while connection.notifies:
             event = connection.notifies.pop()
-            log(str(event), logger='psycopg2-pgevents')
+            log(str(event), logger_name='psycopg2-pgevents')
             yield Event.fromjson(event.payload)

@@ -21,11 +21,11 @@ def set_debug(enabled: bool):
     global _DEBUG_ENABLED
 
     if not enabled:
-        log('Disabling debug output...', logger='pyscopg2-pgevents')
+        log('Disabling debug output...', logger_name='pyscopg2-pgevents')
         _DEBUG_ENABLED = False
     else:
         _DEBUG_ENABLED = True
-        log('Enabling debug output...', logger='pyscopg2-pgevents')
+        log('Enabling debug output...', logger_name='pyscopg2-pgevents')
 
 
 @contextmanager
@@ -66,7 +66,7 @@ def _create_logger(name: str, level: int) -> Generator[logging.Logger, None, Non
     handler.close()
 
 
-def log(message: str, *args: str, category: str='info', logger: str='psycopg2'):
+def log(message: str, *args: str, category: str='info', logger_name: str='psycopg2'):
     """Log a message to the given logger.
 
     If debug has not been enabled, this method will not log a message.
@@ -81,14 +81,11 @@ def log(message: str, *args: str, category: str='info', logger: str='psycopg2'):
         (i.e. "%<FORMAT-CHARACTER>") in the format string, or a dictionary
         with key-value pairs that match up with named formatters
         (i.e. "%(key)s") in the format string.
-    logger: str
-        Logger to which the message should be logged.
+    logger_name: str
+        Name of logger to which the message should be logged.
 
     """
     global _DEBUG_ENABLED
-
-    # TODO: rename logger to logger_name
-    logger_name = logger
 
     if _DEBUG_ENABLED:
         level = logging.INFO
