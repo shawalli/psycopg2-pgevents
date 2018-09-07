@@ -92,7 +92,7 @@ class TestEvent:
 
         assert (len(events) == 1)
 
-        event = events.pop()
+        event = events.pop(0)
 
         assert (event.type == 'INSERT')
         assert (event.schema_name == 'public')
@@ -106,7 +106,7 @@ class TestEvent:
 
         assert (len(events) == 1)
 
-        event = events.pop()
+        event = events.pop(0)
 
         assert (event.type == 'INSERT')
         assert (event.schema_name == 'pointofsale')
@@ -120,7 +120,7 @@ class TestEvent:
 
         assert (len(events) == 1)
 
-        event = events.pop()
+        event = events.pop(0)
 
         assert (event.type == 'INSERT')
         assert (event.schema_name == 'public')
@@ -133,13 +133,13 @@ class TestEvent:
 
         assert (len(events) == 2)
 
-        event = events.pop()
+        event = events.pop(0)
 
         assert (event.type == 'UPDATE')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
-        event = events.pop()
+        event = events.pop(0)
 
         assert (event.type == 'DELETE')
         assert (event.schema_name == 'public')
@@ -153,12 +153,12 @@ class TestEvent:
 
         assert (len(events) == 2)
 
-        event = events.pop()
+        event = events.pop(0)
         assert (event.type == 'INSERT')
         assert (event.schema_name == 'public')
         assert (event.table_name == 'settings')
 
-        event = events.pop()
+        event = events.pop(0)
         assert (event.type == 'INSERT')
         assert (event.schema_name == 'pointofsale')
         assert (event.table_name == 'orders')

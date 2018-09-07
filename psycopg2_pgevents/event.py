@@ -173,6 +173,6 @@ def poll(connection: connection, timeout: float=1.0) -> Iterable[Event]:
         log('------', logger_name=_LOGGER_NAME)
         connection.poll()
         while connection.notifies:
-            event = connection.notifies.pop()
+            event = connection.notifies.pop(0)
             log(str(event), logger_name=_LOGGER_NAME)
             yield Event.fromjson(event.payload)
