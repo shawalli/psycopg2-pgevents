@@ -1,4 +1,5 @@
 import json
+from uuid import UUID
 
 from psycopg2 import ProgrammingError
 from pytest import fixture, mark
@@ -24,6 +25,7 @@ class TestEvent:
     def test_event_fromjson(self):
         json_string = """
         {
+            "event_id": "c2d29867-3d0b-d497-9191-18a9d8ee7830",
             "event_type": "insert",
             "schema_name": "public",
             "table_name": "widget",
@@ -32,6 +34,7 @@ class TestEvent:
         """
 
         evt = Event.fromjson(json_string)
+        assert (evt.id == UUID('c2d29867-3d0b-d497-9191-18a9d8ee7830'))
         assert (evt.type == 'insert')
         assert (evt.schema_name == 'public')
         assert (evt.table_name == 'widget')
@@ -39,6 +42,7 @@ class TestEvent:
 
     def test_event_tojson(self):
         evt = Event(
+            'c2d29867-3d0b-d497-9191-18a9d8ee7830',
             'insert',
             'public',
             'widget',
@@ -47,6 +51,7 @@ class TestEvent:
 
         json_string = evt.tojson()
         json_dict = json.loads(json_string)
+        assert (json_dict['event_id'] == str(evt.id))
         assert (json_dict['event_type'] == evt.type)
         assert (json_dict['schema_name'] == evt.schema_name)
         assert (json_dict['table_name'] == evt.table_name)

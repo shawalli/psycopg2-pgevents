@@ -14,6 +14,8 @@ _LOGGER_NAME = 'pgevents.trigger'
 
 
 INSTALL_TRIGGER_FUNCTION_STATEMENT = """
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 SET search_path = public, pg_catalog;
 
 CREATE OR REPLACE FUNCTION psycopg2_pgevents_create_event()
@@ -29,6 +31,7 @@ RETURNS TRIGGER AS $function$
     PERFORM pg_notify(
      'psycopg2_pgevents_channel',
       json_build_object(
+        'event_id', uuid_generate_v4(),
         'event_type', TG_OP,
         'schema_name', TG_TABLE_SCHEMA,
         'table_name', TG_TABLE_NAME,

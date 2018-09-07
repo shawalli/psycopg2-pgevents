@@ -5,6 +5,7 @@ __all__ = ['Event', 'poll', 'register_event_channel', 'unregister_event_channel'
 import json
 import select
 from typing import Dict, Iterable
+from uuid import UUID
 
 from psycopg2_pgevents.sql import execute
 from psycopg2.extensions import connection
@@ -19,6 +20,8 @@ class Event:
 
     Attributes
     ----------
+    id: UUID
+        Event UUID.
     type: str
         PostGreSQL event type, one of 'INSERT', 'UPDATE', or 'DELETE'.
     schema_name: str
@@ -29,16 +32,19 @@ class Event:
         Row ID of event. This attribute is a string so that it can
         represent both regular id's and things like UUID's.
     """
+    id: str
     type: str
     schema_name: str
     table_name: str
     row_id: str
 
-    def __init__(self, type_: str, schema_name: str, table_name: str, row_id: str) -> None:
+    def __init__(self, id_: UUID, type_: str, schema_name: str, table_name: str, row_id: str) -> None:
         """Initialize a new Event.
 
         Parameters
         ----------
+        id_: UUID
+            Event UUID.
         type_: str
             PostGreSQL event type, one of 'INSERT', 'UPDATE', or 'DELETE'.
         schema_name: str
@@ -54,6 +60,7 @@ class Event:
         None
 
         """
+        self.id = id_
         self.type = type_
         self.schema_name = schema_name
         self.table_name = table_name
@@ -76,6 +83,7 @@ class Event:
         """
         obj = json.loads(json_string)
         return cls(
+            UUID(obj['event_id']),
             obj['event_type'],
             obj['schema_name'],
             obj['table_name'],
@@ -92,6 +100,7 @@ class Event:
 
         """
         return json.dumps({
+            'event_id': str(self.id),
             'event_type': self.type,
             'schema_name': self.schema_name,
             'table_name': self.table_name,
