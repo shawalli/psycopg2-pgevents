@@ -8,6 +8,8 @@ import sys
 
 _DEBUG_ENABLED = False
 
+_LOGGER_NAME = 'pgevents.debug'
+
 
 def set_debug(enabled: bool):
     """Enable or disable debug logs for the entire package.
@@ -21,11 +23,11 @@ def set_debug(enabled: bool):
     global _DEBUG_ENABLED
 
     if not enabled:
-        log('Disabling debug output...', logger_name='pyscopg2-pgevents')
+        log('Disabling debug output...', logger_name=_LOGGER_NAME)
         _DEBUG_ENABLED = False
     else:
         _DEBUG_ENABLED = True
-        log('Enabling debug output...', logger_name='pyscopg2-pgevents')
+        log('Enabling debug output...', logger_name=_LOGGER_NAME)
 
 
 @contextmanager
@@ -66,7 +68,7 @@ def _create_logger(name: str, level: int) -> Generator[logging.Logger, None, Non
     handler.close()
 
 
-def log(message: str, *args: str, category: str='info', logger_name: str='psycopg2'):
+def log(message: str, *args: str, category: str='info', logger_name: str='pgevents'):
     """Log a message to the given logger.
 
     If debug has not been enabled, this method will not log a message.

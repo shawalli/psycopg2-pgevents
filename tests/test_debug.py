@@ -39,7 +39,7 @@ class TestDebug:
         logs = log_capture.actual()
 
         assert (len(logs) == 1)
-        assert (('psycopg2', 'INFO', 'foo') == logs.pop())
+        assert (('pgevents', 'INFO', 'foo') == logs.pop())
 
     def test_log_error(self, log_capture):
         log('foo', category='error')
@@ -47,7 +47,7 @@ class TestDebug:
         logs = log_capture.actual()
 
         assert (len(logs) == 1)
-        assert (('psycopg2', 'ERROR', 'foo') == logs.pop())
+        assert (('pgevents', 'ERROR', 'foo') == logs.pop())
 
     def test_log_args(self, log_capture):
         log('foo %s %s %d', 'bar', 'baz', 1)
@@ -63,8 +63,8 @@ class TestDebug:
         logs = log_capture.actual()
 
         assert (len(logs) == 2)
-        assert (('psycopg2', 'INFO', 'foo bar baz 1') == logs.pop(0))
-        assert (('psycopg2', 'INFO', 'foo bar baz 1') == logs.pop(0))
+        assert (('pgevents', 'INFO', 'foo bar baz 1') == logs.pop(0))
+        assert (('pgevents', 'INFO', 'foo bar baz 1') == logs.pop(0))
 
     def test_log_custom_logger(self, log_capture):
         log('foo', logger_name='test')

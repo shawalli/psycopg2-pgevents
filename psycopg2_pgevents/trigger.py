@@ -10,6 +10,8 @@ from psycopg2.extensions import connection
 from psycopg2_pgevents.debug import log
 from psycopg2_pgevents.sql import execute
 
+_LOGGER_NAME = 'pgevents.trigger'
+
 
 INSTALL_TRIGGER_FUNCTION_STATEMENT = """
 SET search_path = public, pg_catalog;
@@ -89,7 +91,7 @@ def trigger_function_installed(connection: connection):
     """
     installed = False
 
-    log('Checking if trigger function installed...', logger_name='psycopg2-pgevents')
+    log('Checking if trigger function installed...', logger_name=_LOGGER_NAME)
 
     try:
         execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
@@ -108,7 +110,7 @@ def trigger_function_installed(connection: connection):
             # Some other exception; re-raise
             raise e
 
-    log('...{}installed'.format('' if installed else 'NOT '), logger_name='psycopg2-pgevents')
+    log('...{}installed'.format('' if installed else 'NOT '), logger_name=_LOGGER_NAME)
 
     return installed
 
@@ -133,7 +135,7 @@ def trigger_installed(connection: connection, table: str, schema: str='public'):
     """
     installed = False
 
-    log('Checking if {}.{} trigger installed...'.format(schema, table), logger_name='psycopg2-pgevents')
+    log('Checking if {}.{} trigger installed...'.format(schema, table), logger_name=_LOGGER_NAME)
 
     statement = SELECT_TRIGGER_STATEMENT.format(
         table=table,
@@ -144,7 +146,7 @@ def trigger_installed(connection: connection, table: str, schema: str='public'):
     if result:
         installed = True
 
-    log('...{}installed'.format('' if installed else 'NOT '), logger_name='psycopg2-pgevents')
+    log('...{}installed'.format('' if installed else 'NOT '), logger_name=_LOGGER_NAME)
 
     return installed
 
@@ -171,11 +173,11 @@ def install_trigger_function(connection: connection, overwrite: bool=False) -> N
         prior_install = trigger_function_installed(connection)
 
     if not prior_install:
-        log('Installing trigger function...', logger_name='psycopg2-pgevents')
+        log('Installing trigger function...', logger_name=_LOGGER_NAME)
 
         execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT)
     else:
-        log('Trigger function already installed; skipping...', logger_name='psycopg2-pgevents')
+        log('Trigger function already installed; skipping...', logger_name=_LOGGER_NAME)
 
 
 def uninstall_trigger_function(connection: connection, force: bool=False) -> None:
@@ -199,7 +201,7 @@ def uninstall_trigger_function(connection: connection, force: bool=False) -> Non
     if force:
         modifier = 'CASCADE'
 
-    log('Uninstalling trigger function (cascade={})...'.format(force), logger_name='psycopg2-pgevents')
+    log('Uninstalling trigger function (cascade={})...'.format(force), logger_name=_LOGGER_NAME)
 
     statement = UNINSTALL_TRIGGER_FUNCTION_STATEMENT.format(modifier=modifier)
     execute(connection, statement)
@@ -231,7 +233,7 @@ def install_trigger(connection: connection, table: str, schema: str='public', ov
         prior_install = trigger_installed(connection, table, schema)
 
     if not prior_install:
-        log('Installing {}.{} trigger...'.format(schema, table), logger_name='psycopg2-pgevents')
+        log('Installing {}.{} trigger...'.format(schema, table), logger_name=_LOGGER_NAME)
 
         statement = INSTALL_TRIGGER_STATEMENT.format(
             schema=schema,
@@ -239,7 +241,7 @@ def install_trigger(connection: connection, table: str, schema: str='public', ov
         )
         execute(connection, statement)
     else:
-        log('{}.{} trigger already installed; skipping...'.format(schema, table), logger_name='psycopg2-pgevents')
+        log('{}.{} trigger already installed; skipping...'.format(schema, table), logger_name=_LOGGER_NAME)
 
 
 def uninstall_trigger(connection: connection, table: str, schema: str='public') -> None:
@@ -259,7 +261,7 @@ def uninstall_trigger(connection: connection, table: str, schema: str='public') 
     None
 
     """
-    log('Uninstalling {}.{} trigger...'.format(schema, table), logger_name='psycopg2-pgevents')
+    log('Uninstalling {}.{} trigger...'.format(schema, table), logger_name=_LOGGER_NAME)
 
     statement = UNINSTALL_TRIGGER_STATEMENT.format(
         schema=schema,
