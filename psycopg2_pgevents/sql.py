@@ -9,19 +9,28 @@ from psycopg2.extensions import connection, cursor
 
 from psycopg2_pgevents.debug import log
 
+_LOGGER_NAME = 'pgevents.sql'
+
 
 class Psycopg2Cursor(cursor):
     def execute(self, query: str, args: Union[Dict, List, None]=None):
-        log('Query')
-        log('-----')
-        log(self.mogrify(query, args))
+        log('Query', logger_name=_LOGGER_NAME)
+        log('-----', logger_name=_LOGGER_NAME)
+        log(self.mogrify(query, args), logger_name=_LOGGER_NAME)
 
         try:
             super().execute(query, args)
         except Exception as e:
-            log('Exception', category='error')
-            log('---------', category='error')
-            log('{name}: {msg}'.format(name=e.__class__.__name__, msg=str(e)), category='error')
+            log('Exception', category='error', logger_name=_LOGGER_NAME)
+            log('---------', category='error', logger_name=_LOGGER_NAME)
+            log(
+                '{name}: {msg}'.format(
+                    name=e.__class__.__name__,
+                    msg=str(e)
+                ),
+                category='error',
+                logger_name=_LOGGER_NAME
+            )
             raise
 
 
@@ -61,20 +70,20 @@ def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, 
                 response = cursor.fetchall()
                 if not response:
                     # Empty response list
-                    log('<No Response>')
+                    log('<No Response>', logger_name=_LOGGER_NAME)
                     return None
             except ProgrammingError as e:
                 if e.args and e.args[0] == 'no results to fetch':
                     # No response available (i.e. no response given)
-                    log('<No Response>')
+                    log('<No Response>', logger_name=_LOGGER_NAME)
                     return None
 
                 # Some other programming error; re-raise
                 raise e
 
-            log('Response')
-            log('--------')
+            log('Response', logger_name=_LOGGER_NAME)
+            log('--------', logger_name=_LOGGER_NAME)
             for line in response:
-                log(str(line))
+                log(str(line), logger_name=_LOGGER_NAME)
 
     return response
