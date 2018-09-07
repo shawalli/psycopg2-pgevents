@@ -71,7 +71,8 @@ FROM
     information_schema.triggers
 WHERE
     event_object_schema = '{schema}' AND
-    event_object_table = '{table}';
+    event_object_table = '{table}' AND
+    trigger_name = 'psycopg2_pgevents_trigger';
 """
 
 
