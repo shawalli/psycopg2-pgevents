@@ -14,7 +14,12 @@ def set_debug(enabled: bool):
     """
     global _DEBUG_ENABLED
 
-    _DEBUG_ENABLED = enabled
+    if not enabled:
+        log('Disabling debug output...', logger='pyscopg2-pgevents')
+        _DEBUG_ENABLED = False
+    else:
+        _DEBUG_ENABLED = True
+        log('Enabling debug output...', logger='pyscopg2-pgevents')
 
 
 def log(message, *args, category='info', logger='psycopg2'):
