@@ -53,7 +53,7 @@ def _create_logger(name: str, level: int) -> Generator[logging.Logger, None, Non
     logger.setLevel(level)
 
     # Setup handler and add to logger
-    handler = logging.StreamHandler(sys.stderr)
+    handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(asctime)s %(levelname)-5s [%(name)s]: %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
