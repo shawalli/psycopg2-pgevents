@@ -1,4 +1,10 @@
+"""This module provides functionality for debug logging within the package."""
+__all__ = ['log', 'set_debug']
+
+from contextlib import contextmanager
+from typing import Generator
 import logging
+import sys
 
 _DEBUG_ENABLED = False
 
@@ -22,7 +28,45 @@ def set_debug(enabled: bool):
         log('Enabling debug output...', logger='pyscopg2-pgevents')
 
 
-def log(message, *args, category='info', logger='psycopg2'):
+@contextmanager
+def _create_logger(name: str, level: int) -> Generator[logging.Logger, None, None]:
+    """Create a context-based logger.
+    Parameters
+    ----------
+    name: str
+        Name of logger to use when logging.
+    level: int
+        Logging level, one of logging's levels (e.g. INFO, ERROR, etc.).
+
+    Returns
+    -------
+    logging.Logger
+        Named logger that may be used for logging.
+    """
+    # Get logger
+    logger = logging.getLogger(name)
+
+    # Set logger level
+    old_level = logger.level
+    logger.setLevel(level)
+
+    # Setup handler and add to logger
+    handler = logging.StreamHandler(sys.stderr)
+    formatter = logging.Formatter('%(asctime)s %(levelname)-5s [%(name)s]: %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    yield logger
+
+    # Reset logger level
+    logger.setLevel(old_level)
+
+    # Remove handler from logger
+    logger.removeHandler(handler)
+    handler.close()
+
+
+def log(message: str, *args: str, category: str='info', logger: str='psycopg2'):
     """Log a message to the given logger.
 
     If debug has not been enabled, this method will not log a message.
@@ -43,15 +87,17 @@ def log(message, *args, category='info', logger='psycopg2'):
     """
     global _DEBUG_ENABLED
 
-    logger = logging.getLogger(logger)
+    # TODO: rename logger to logger_name
+    logger_name = logger
 
     if _DEBUG_ENABLED:
-        logger.setLevel(logging.INFO)
+        level = logging.INFO
     else:
-        logger.setLevel(logging.CRITICAL + 1)
+        level = logging.CRITICAL + 1
 
-    log_fn = getattr(logger, category, None)
-    if log_fn is None:
-        raise ValueError('Invalid log category "{}"'.format(category))
+    with _create_logger(logger_name, level) as logger:
+        log_fn = getattr(logger, category, None)
+        if log_fn is None:
+            raise ValueError('Invalid log category "{}"'.format(category))
 
-    log_fn(message, *args)
+        log_fn(message, *args)

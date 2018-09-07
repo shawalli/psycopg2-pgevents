@@ -30,7 +30,8 @@ class TestDebug:
         log('foo')
 
         logs = log_capture.actual()
-        assert (len(logs) == 0)
+        # Only log should be the one notifying that logging is being disabled
+        assert (len(logs) == 1)
 
     def test_log_info(self, log_capture):
         log('foo')
