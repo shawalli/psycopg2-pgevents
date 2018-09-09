@@ -27,11 +27,6 @@ def log_capture():
 
 @fixture
 def connection():
-    print(DATABASE_BASE_URL)
-    print(CI_DATABASE)
-    print(CI_DATABASE_DSN)
-    print(TEST_DATABASE_DSN)
-    print(environ)
     # Create fresh test database
     _conn = connect(dsn=CI_DATABASE_DSN)
     _conn.autocommit = True
