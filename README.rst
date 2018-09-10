@@ -13,6 +13,7 @@ Example
 The following shows an example of the package in action.
 
 Assumptions
++++++++++++
 
  - PostGreSQL server is running locally.
  - default database (``postgres``) is available.
@@ -53,8 +54,13 @@ Troubleshooting
   mechanism.
 
 * The same connection that is used with ``register_event_channel()`` must be
-  used with ``poll()` in order to receive events. This is due to the nature of
+  used with ``poll()`` in order to receive events. This is due to the nature of
   how PostGreSQL manages "listening" connections.
 
 * If the table that you'd like to listen to is not in the public schema, the
-  schema name must be given in the ``install_trigger()`` method.
+  schema name must be given as a keyword argument in the ``install_trigger()``
+  method.
+
+Authorship and License
+----------------------
+Written by Shawn Wallis and distributed under the MIT license.
