@@ -66,6 +66,15 @@ class Event:
         self.table_name = table_name
         self.row_id = row_id
 
+    def __repr__(self):
+        return '<Event id:{id_} type:{type_} table:{schema}.{table} row-id:{row_id}'.format(
+            id_=self.id,
+            type_=self.type,
+            schema=self.schema_name,
+            table=self.table_name,
+            row_id=self.row_id
+        )
+
     @classmethod
     def fromjson(cls, json_string: str) -> 'Event':
         """Create a new Event from a from a psycopg2-pgevent event JSON.
