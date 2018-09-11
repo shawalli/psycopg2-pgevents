@@ -15,10 +15,16 @@ about = {}
 with open(about_file) as f:
     exec(f.read(), about)
 
+long_description = ''
+with open('README.rst') as f:
+    long_description = f.read()
+
 setup(
     name=about['__title__'],
     version=about['__version__'],
     description=about['__summary__'],
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
     author=about['__author__'],
     author_email=about['__email__'],
     url=about['__uri__'],
