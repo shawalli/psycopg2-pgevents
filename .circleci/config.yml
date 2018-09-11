@@ -12,10 +12,13 @@ common_steps: &common_steps
         key: v1-deps-{{ checksum "setup.py" }}-{{ checksum "tox.ini" }}-{{ checksum "requirements.txt" }}
     - run:
         name: Install Dependencies
-        command: pip install --user tox
+        command: pip install --user tox coveralls
     - run:
-        name: Run Tests with Tox
+        name: Run Tests
         command: ~/.local/bin/tox
+    - run:
+        name: Code Coverage
+        command: ~/.local/bin/coveralls
     - save_cache:
         paths:
           - .tox
