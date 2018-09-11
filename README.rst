@@ -1,6 +1,13 @@
 psycopg2-pgevents
 =================
 
+.. image:: https://circleci.com/gh/shawalli/psycopg2-pgevents.svg?style=svg
+    :target: https://circleci.com/gh/shawalli/psycopg2-pgevents
+.. image:: https://coveralls.io/repos/github/shawalli/psycopg2-pgevents/badge.svg?branch=feature%2Fcode_coverage
+    :target: https://coveralls.io/github/shawalli/psycopg2-pgevents?branch=feature%2Fcode_coverage
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+    :target: https://opensource.org/licenses/MIT
+
 This package makes it simple to use PostGreSQL's NOTIFY/LISTEN eventing system
 from Python in a consistent, pleasing manner.
 
