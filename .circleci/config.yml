@@ -31,6 +31,13 @@ common_env: &common_env
   TEST_DATABASE_BASE_URL: postgresql://root@127.0.0.1
   TEST_DATABASE_CI: circle_test
 
+common_postgres: &common_postgres
+  image: circleci/postgres:10-alpine
+  environment:
+    POSTGRES_DB: test
+    POSTGRES_USER: root
+    POSTGRES_PASSWORD: ""
+
 #
 # Jobs
 #
@@ -43,7 +50,7 @@ jobs:
         environment:
           TOXENV: py36
           <<: *common_env
-      - image: circleci/postgres:10-alpine
+      - <<: *common_postgres
   py37:
     <<: *common_steps
     docker:
@@ -51,7 +58,7 @@ jobs:
         environment:
           TOXENV: py37
           <<: *common_env
-      - image: circleci/postgres:10-alpine
+      - <<: *common_postgres
 
 #
 # Workflows
