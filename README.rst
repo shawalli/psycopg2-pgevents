@@ -1,10 +1,11 @@
+#################
 psycopg2-pgevents
-=================
+#################
 
 .. image:: https://circleci.com/gh/shawalli/psycopg2-pgevents.svg?style=svg
     :target: https://circleci.com/gh/shawalli/psycopg2-pgevents
-.. image:: https://coveralls.io/repos/github/shawalli/psycopg2-pgevents/badge.svg?branch=feature%2Fcode_coverage
-    :target: https://coveralls.io/github/shawalli/psycopg2-pgevents?branch=feature%2Fcode_coverage
+.. image:: https://coveralls.io/repos/github/shawalli/psycopg2-pgevents/badge.svg?branch=master
+    :target: https://coveralls.io/github/shawalli/psycopg2-pgevents?branch=master
 .. image:: https://img.shields.io/badge/License-MIT-yellow.svg
     :target: https://opensource.org/licenses/MIT
 
@@ -14,13 +15,14 @@ from Python in a consistent, pleasing manner.
 Note that this project officially supports Python 3.6+. This is primarily due
 to static typing.
 
+*******
 Example
--------
+*******
 
 The following shows an example of the package in action.
 
 Assumptions
-+++++++++++
+-----------
 
  - PostGreSQL server is running locally.
  - default database (``postgres``) is available.
@@ -53,8 +55,9 @@ Assumptions
         uninstall_trigger_function(connection)
         print('Shutdown complete.')
 
+***************
 Troubleshooting
----------------
+***************
 
 * The connection's ``autocommit`` property must be enabled for this package to
   operate correctly. This requirement is provided by PostGreSQL's NOTIFY/LISTEN
@@ -68,6 +71,8 @@ Troubleshooting
   schema name must be given as a keyword argument in the ``install_trigger()``
   method.
 
+**********************
 Authorship and License
-----------------------
+**********************
+
 Written by Shawn Wallis and distributed under the MIT license.
