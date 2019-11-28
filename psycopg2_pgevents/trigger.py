@@ -215,7 +215,7 @@ def uninstall_trigger_function(connection: connection, force: bool = False) -> N
     execute(connection, statement)
 
 
-def install_trigger(connection: connection, table: str, schema: str='public', overwrite: bool=False, trigger_on_update: bool=False, trigger_on_delete: bool=False) -> None:
+def install_trigger(connection: connection, table: str, schema: str='public', overwrite: bool=False, trigger_on_update: bool=True, trigger_on_delete: bool=True) -> None:
     """Install a psycopg2-pgevents trigger against a table.
 
     Parameters
@@ -230,9 +230,9 @@ def install_trigger(connection: connection, table: str, schema: str='public', ov
         Whether or not to overwrite existing installation of trigger for the
         given table, if existing installation is found.
     trigger_on_update: bool
-        Whether or not to add a "OR UPDATE" clause to the trigger; by default only "ON INSERT" is used
+        Whether or not to add a "OR UPDATE" clause to the trigger; by default "ON INSERT OR UPDATE OR DELETE" is used
     trigger_on_delete: bool
-        Whether or not to add a "OR DELETE" clause to the trigger; by default only "ON INSERT" is used
+        Whether or not to add a "OR DELETE" clause to the trigger; by default "ON INSERT OR UPDATE OR DELETE" is used
 
     Returns
     -------
@@ -240,17 +240,17 @@ def install_trigger(connection: connection, table: str, schema: str='public', ov
 
     """
     prior_install = False
-    orupdate = ''
-    ordelete = ''
+    orupdate = ' OR UPDATE'
+    ordelete = ' OR DELETE'
 
     if not overwrite:
         prior_install = trigger_installed(connection, table, schema)
 
-    if trigger_on_update:
-        orupdate = ' OR UPDATE'
+    if not trigger_on_update:
+        orupdate = ''
 
-    if trigger_on_delete:
-        ordelete = ' OR DELETE'
+    if not trigger_on_delete:
+        ordelete = ''
 
     if not prior_install:
         log("Installing {}.{} trigger...".format(schema, table), logger_name=_LOGGER_NAME)
