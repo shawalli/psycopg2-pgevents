@@ -29,9 +29,9 @@ RETURNS TRIGGER AS $function$
     row_id integer;
   BEGIN
     IF (TG_OP = 'DELETE') THEN
-      row_id = OLD.id;
+      row_id = OLD.{rowid};
     ELSE
-      row_id = NEW.id;
+      row_id = NEW.{rowid};
     END IF;
     PERFORM pg_notify(
      'psycopg2_pgevents_channel',
@@ -61,7 +61,7 @@ SET search_path = {schema}, pg_catalog;
 DROP TRIGGER IF EXISTS psycopg2_pgevents_trigger ON {schema}.{table};
 
 CREATE TRIGGER psycopg2_pgevents_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {schema}.{table}
+AFTER INSERT{orupdate}{ordelete} ON {schema}.{table}
 FOR EACH ROW
 EXECUTE PROCEDURE public.psycopg2_pgevents_create_event();
 
@@ -157,7 +157,7 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
     return installed
 
 
-def install_trigger_function(connection: connection, overwrite: bool = False) -> None:
+def install_trigger_function(connection: connection, rowid: str, overwrite: bool=False) -> None:
     """Install the psycopg2-pgevents trigger function against the database.
 
     Parameters
@@ -167,6 +167,8 @@ def install_trigger_function(connection: connection, overwrite: bool = False) ->
     overwrite: bool
         Whether or not to overwrite existing installation of psycopg2-pgevents
         trigger function, if existing installation is found.
+    rowid: string
+        The id to return for the row, e.g. id, ordercode, etc
 
     Returns
     -------
@@ -181,7 +183,7 @@ def install_trigger_function(connection: connection, overwrite: bool = False) ->
     if not prior_install:
         log("Installing trigger function...", logger_name=_LOGGER_NAME)
 
-        execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT)
+        execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT.format(rowid=rowid))
     else:
         log("Trigger function already installed; skipping...", logger_name=_LOGGER_NAME)
 
@@ -213,7 +215,7 @@ def uninstall_trigger_function(connection: connection, force: bool = False) -> N
     execute(connection, statement)
 
 
-def install_trigger(connection: connection, table: str, schema: str = "public", overwrite: bool = False) -> None:
+def install_trigger(connection: connection, table: str, schema: str='public', overwrite: bool=False, trigger_on_update: bool=False, trigger_on_delete: bool=False) -> None:
     """Install a psycopg2-pgevents trigger against a table.
 
     Parameters
@@ -227,6 +229,10 @@ def install_trigger(connection: connection, table: str, schema: str = "public", 
     overwrite: bool
         Whether or not to overwrite existing installation of trigger for the
         given table, if existing installation is found.
+    trigger_on_update: bool
+        Whether or not to add a "OR UPDATE" clause to the trigger; by default only "ON INSERT" is used
+    trigger_on_delete: bool
+        Whether or not to add a "OR DELETE" clause to the trigger; by default only "ON INSERT" is used
 
     Returns
     -------
@@ -234,14 +240,27 @@ def install_trigger(connection: connection, table: str, schema: str = "public", 
 
     """
     prior_install = False
+    orupdate = ''
+    ordelete = ''
 
     if not overwrite:
         prior_install = trigger_installed(connection, table, schema)
 
+    if trigger_on_update:
+        orupdate = ' OR UPDATE'
+
+    if trigger_on_delete:
+        ordelete = ' OR DELETE'
+
     if not prior_install:
         log("Installing {}.{} trigger...".format(schema, table), logger_name=_LOGGER_NAME)
 
-        statement = INSTALL_TRIGGER_STATEMENT.format(schema=schema, table=table)
+        statement = INSTALL_TRIGGER_STATEMENT.format(
+            schema=schema,
+            table=table,
+            orupdate=orupdate,
+            ordelete=ordelete
+        )
         execute(connection, statement)
     else:
         log("{}.{} trigger already installed; skipping...".format(schema, table), logger_name=_LOGGER_NAME)
