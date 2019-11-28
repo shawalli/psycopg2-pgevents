@@ -41,7 +41,8 @@ Assumptions
     connection = connect(dsn='postgres:///postgres')
     connection.autocommit = True
 
-    install_trigger_function(connection)
+    # assuming the table 'orders' has a column called 'id', we use that as the rowid to return in the event
+    install_trigger_function(connection, rowid='id')
     install_trigger(connection, 'orders')
     register_event_channel(connection)
 
@@ -78,3 +79,4 @@ Authorship and License
 **********************
 
 Written by Shawn Wallis and distributed under the MIT license.
+
