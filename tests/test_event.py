@@ -15,9 +15,9 @@ def event_channel_registered(connection):
 
 @fixture
 def triggers_installed(connection):
-    install_trigger_function(connection)
-    install_trigger(connection, "settings")
-    install_trigger(connection, "orders", schema="pointofsale")
+    install_trigger_function(connection, rowid='id')
+    install_trigger(connection, 'settings')
+    install_trigger(connection, 'orders', schema='pointofsale')
 
 
 class TestEvent:
