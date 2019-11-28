@@ -8,7 +8,7 @@ from psycopg2_pgevents.trigger import install_trigger, install_trigger_function,
 
 @fixture
 def trigger_fn_installed(connection):
-    install_trigger_function(connection)
+    install_trigger_function(connection, rowid='id')
 
 
 @fixture
@@ -43,7 +43,7 @@ class TestTrigger:
     def test_add_trigger_function(self, connection):
         trigger_function_installed = False
 
-        install_trigger_function(connection)
+        install_trigger_function(connection, rowid='id')
         try:
             execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
             trigger_function_installed = True
