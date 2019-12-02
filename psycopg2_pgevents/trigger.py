@@ -21,7 +21,7 @@ SET search_path = public, pg_catalog;
 CREATE OR REPLACE FUNCTION psycopg2_pgevents_create_event()
 RETURNS TRIGGER AS $function$
   DECLARE
-    row_id integer;
+    row_id {rowidtype};
   BEGIN
     IF (TG_OP = 'DELETE') THEN
       row_id = OLD.{rowid};
@@ -155,7 +155,7 @@ def trigger_installed(connection: connection, table: str, schema: str='public'):
     return installed
 
 
-def install_trigger_function(connection: connection, rowid: str, overwrite: bool=False) -> None:
+def install_trigger_function(connection: connection, rowid, rowidtype: str, overwrite: bool=False) -> None:
     """Install the psycopg2-pgevents trigger function against the database.
 
     Parameters
@@ -181,7 +181,7 @@ def install_trigger_function(connection: connection, rowid: str, overwrite: bool
     if not prior_install:
         log('Installing trigger function...', logger_name=_LOGGER_NAME)
 
-        execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT.format(rowid=rowid))
+        execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT.format(rowid=rowid, rowidtype=rowidtype))
     else:
         log('Trigger function already installed; skipping...', logger_name=_LOGGER_NAME)
 
