@@ -11,37 +11,47 @@ on:
 jobs:
   pr:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Install dependencies
-        uses: abatilo/actions-poetry@v1.8.0
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
         with:
-          python_version: 3.7
-          poetry_version: 1.0
-          args: install
+          python-version: 3.7
+
+      - name: Install poetry
+        uses: dschep/install-poetry-action@v1.3
+        with:
+          create_virtualenvs: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: ~/.virtualenvs
+          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Set Poetry config
+        run: |
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.path ~/.virtualenvs
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: poetry install
+
+      - name: Run pre-commit (PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin master:master
+          poetry run pre-commit run --from-ref master --to-ref HEAD
+
       - name: Run pre-commit
-        uses: abatilo/actions-poetry@v1.8.0
-        with:
-          python_version: 3.7
-          poetry_version: 1.0
-          args: run pre-commit run --all-files
+        if: github.event_name != 'pull_request'
+        run: poetry run pre-commit run --from-ref HEAD~1 --to-ref HEAD
+
       - name: Unit Test
-        uses: abatilo/actions-poetry@v1.8.0
-        with:
-          python_version: 3.7
-          poetry_version: 1.0
-          args: run python -m pytest --cov=psycopg2_pgevents --cov-branch tests/
+        run: poetry run python -m pytest --cov=psycopg2_pgevents --cov-branch --cov-report term-missing tests/
