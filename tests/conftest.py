@@ -1,6 +1,5 @@
-
-from pathlib import Path
 from os import environ
+from pathlib import Path
 
 from psycopg2 import connect
 from pytest import fixture
@@ -8,13 +7,13 @@ from testfixtures import LogCapture
 
 from psycopg2_pgevents.debug import set_debug
 
-DATABASE_BASE_URL = environ.get('TEST_DATABASE_BASE_URL', 'postgres://')
-CI_DATABASE = environ.get('TEST_DATABASE_CI', 'postgres')
+DATABASE_BASE_URL = environ.get("TEST_DATABASE_BASE_URL", "postgres://")
+CI_DATABASE = environ.get("TEST_DATABASE_CI", "postgres")
 
-CI_DATABASE_DSN = '/'.join([DATABASE_BASE_URL, CI_DATABASE])
-TEST_DATABASE_DSN = '/'.join([DATABASE_BASE_URL, 'test'])
+CI_DATABASE_DSN = "/".join([DATABASE_BASE_URL, CI_DATABASE])
+TEST_DATABASE_DSN = "/".join([DATABASE_BASE_URL, "test"])
 
-DATABASE_SHAPE_SQL_FILE = Path(Path(__file__).parent, 'resources', 'database_shape.sql')
+DATABASE_SHAPE_SQL_FILE = Path(Path(__file__).parent, "resources", "database_shape.sql")
 
 
 @fixture
@@ -32,8 +31,8 @@ def connection():
     _conn.autocommit = True
 
     _curs = _conn.cursor()
-    _curs.execute('DROP DATABASE IF EXISTS test')
-    _curs.execute('CREATE DATABASE test')
+    _curs.execute("DROP DATABASE IF EXISTS test")
+    _curs.execute("CREATE DATABASE test")
     _conn.close()
 
     # Create test database connection
@@ -42,7 +41,7 @@ def connection():
     curs = conn.cursor()
 
     # Define test database shape
-    with open(DATABASE_SHAPE_SQL_FILE, 'r') as sql_file:
+    with open(DATABASE_SHAPE_SQL_FILE, "r") as sql_file:
         sql_contents = sql_file.read()
 
         curs.execute(sql_contents)
@@ -56,7 +55,6 @@ def connection():
 def client():
     conn = connect(dsn=TEST_DATABASE_DSN)
     conn.autocommit = True
-    curs = conn.cursor()
 
     yield conn
 
