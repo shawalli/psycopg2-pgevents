@@ -6,19 +6,33 @@ on:
 jobs:
   pr:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - uses: pre-commit/action@v2.0.0
+      - name: Checkout Code
+        uses: actions/checkout@v2
       - name: Install dependencies
         uses: abatilo/actions-poetry@v1.8.0
         with:
           python_version: 3.7
           poetry_version: 1.0
           args: install
-      - name: Run unit tests
+      - name: Run pre-commit
+      - uses: pre-commit/action@v2.0.0
+      - name: Unit Test
         uses: abatilo/actions-poetry@v1.8.0
         with:
           python_version: 3.7
           poetry_version: 1.0
-          args: run python -m pytest --cov=psycopg2_pgevent --cov-branch tests/
+          args: run python -m pytest --cov=psycopg2_pgevents --cov-branch tests/
