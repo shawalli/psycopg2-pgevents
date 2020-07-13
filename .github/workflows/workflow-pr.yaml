@@ -1,0 +1,24 @@
+name: pre-commit
+
+on:
+  - pull_request
+
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: pre-commit/action@v2.0.0
+      - name: Install dependencies
+        uses: abatilo/actions-poetry@v1.8.0
+        with:
+          python_version: 3.7
+          poetry_version: 1.0
+          args: install
+      - name: Run unit tests
+        uses: abatilo/actions-poetry@v1.8.0
+        with:
+          python_version: 3.7
+          poetry_version: 1.0
+          args: run python -m pytest --cov=psycopg2_pgevent --cov-branch tests/
