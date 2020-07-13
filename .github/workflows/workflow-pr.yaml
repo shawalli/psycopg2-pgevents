@@ -34,7 +34,7 @@ jobs:
           poetry_version: 1.0
           args: install
       - name: Run pre-commit
-      - uses: pre-commit/action@v2.0.0
+        uses: pre-commit/action@v2.0.0
       - name: Unit Test
         uses: abatilo/actions-poetry@v1.8.0
         with:
