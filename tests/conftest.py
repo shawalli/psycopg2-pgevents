@@ -27,7 +27,7 @@ def log_capture():
 @fixture
 def connection():
     # Create fresh test database
-    _conn = connect(dsn=CI_DATABASE_DSN)
+    _conn = connect(dsn=CI_DATABASE_DSN, password="postgres")
     _conn.autocommit = True
 
     _curs = _conn.cursor()
@@ -36,7 +36,7 @@ def connection():
     _conn.close()
 
     # Create test database connection
-    conn = connect(dsn=TEST_DATABASE_DSN)
+    conn = connect(dsn=TEST_DATABASE_DSN, password="postgres")
     conn.autocommit = True
     curs = conn.cursor()
 

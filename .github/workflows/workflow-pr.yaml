@@ -11,6 +11,21 @@ on:
 jobs:
   pr:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -55,3 +70,5 @@ jobs:
 
       - name: Unit Test
         run: poetry run python -m pytest --cov=psycopg2_pgevents --cov-branch --cov-report term-missing tests/
+        env:
+          TEST_DATABASE_BASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}
