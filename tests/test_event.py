@@ -124,8 +124,8 @@ class TestEvent:
         assert evt.schema_name == "public"
         assert evt.table_name == "settings"
 
-        execute(client, "UPDATE public.settings SET value = 2 WHERE id = {row_id};".format(row_id=event.row_id))
-        execute(client, "DELETE FROM public.settings WHERE id = {row_id};".format(row_id=event.row_id))
+        execute(client, "UPDATE public.settings SET value = 2 WHERE id = {row_id};".format(row_id=evt.row_id))
+        execute(client, "DELETE FROM public.settings WHERE id = {row_id};".format(row_id=evt.row_id))
 
         evts = [evt for evt in event.poll(connection)]
 
