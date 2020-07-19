@@ -19,6 +19,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Utilities",
 ]
+include = [
+  "LICENSE.txt",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
