@@ -51,16 +51,11 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: poetry install
 
-      - name: Run pre-commit (PR)
+      - name: Run pre-commit
         if: github.event_name == 'pull_request'
         run: |
           git fetch origin master:master
           poetry run pre-commit run --from-ref master --to-ref HEAD
-
-      - name: Run pre-commit (release)
-        if: github.event_name != 'pull_request'
-        run: poetry run pre-commit run --from-ref HEAD~1 --to-ref HEAD
-
 
   test:
     name: 🧪
