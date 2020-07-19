@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build, Lint, Test
 
 on:
   push:
@@ -9,7 +9,62 @@ on:
       - master
 
 jobs:
-  pr:
+  lint:
+    name: ️⚒️ & 👕
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry
+        uses: dschep/install-poetry-action@v1.3
+        with:
+          create_virtualenvs: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: ~/.virtualenvs
+          key: poetry-${{ github.ref }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            poetry-${{ github.ref }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Set Poetry config
+        run: |
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.path ~/.virtualenvs
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: poetry install
+
+      - name: Run pre-commit (PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin master:master
+          poetry run pre-commit run --from-ref master --to-ref HEAD
+
+      - name: Run pre-commit (master)
+        if: github.event_name != 'pull_request'
+        run: poetry run pre-commit run --from-ref HEAD~1 --to-ref HEAD
+
+
+  test:
+    name: 🧪
+    needs: lint
+
     strategy:
       matrix:
         python-version: [3.7, 3.8]
@@ -63,16 +118,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: poetry install
 
-      - name: Run pre-commit (PR)
-        if: github.event_name == 'pull_request'
-        run: |
-          git fetch origin master:master
-          poetry run pre-commit run --from-ref master --to-ref HEAD
-
-      - name: Run pre-commit
-        if: github.event_name != 'pull_request'
-        run: poetry run pre-commit run --from-ref HEAD~1 --to-ref HEAD
-
       - name: Unit Test
         run: poetry run python -m pytest --cov=psycopg2_pgevents --cov-branch tests/
         env:
@@ -84,11 +129,13 @@ jobs:
           COVERALLS_FLAG_NAME: py-${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
 
-  pr-finish:
-    name: Finish Code Coverage Submission
-    needs: pr
+  finish:
+    name: 🚪
+    needs: test
+
     runs-on: ubuntu-latest
     container: python:3-slim
+
     steps:
       - name: Finished
         run: |
