@@ -40,7 +40,8 @@ jobs:
       #   run: poetry install
 
       - name: Bump release version
-        run: poetry version ${{ steps.bumpversion.outputs.new_tag }}
+        # run: poetry version ${{ steps.bumpversion.outputs.new_tag }}
+        run: poetry version 0.2.0
 
       - name: Build package
         run: poetry build
