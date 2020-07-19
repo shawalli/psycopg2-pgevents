@@ -1,12 +1,13 @@
 name: Build, Lint, Test
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 jobs:
   lint:
@@ -56,7 +57,7 @@ jobs:
           git fetch origin master:master
           poetry run pre-commit run --from-ref master --to-ref HEAD
 
-      - name: Run pre-commit (master)
+      - name: Run pre-commit (release)
         if: github.event_name != 'pull_request'
         run: poetry run pre-commit run --from-ref HEAD~1 --to-ref HEAD
 
@@ -119,17 +120,18 @@ jobs:
         run: poetry install
 
       - name: Unit Test
-        run: poetry run python -m pytest --cov=psycopg2_pgevents --cov-branch tests/
         env:
           TEST_DATABASE_BASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}
+        run: poetry run python -m pytest --cov=psycopg2_pgevents --cov-branch tests/
+
       - name: Submit Code Coverage
-        run: poetry run coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: py-${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
+        run: poetry run coveralls
 
-  finish:
+  test-finish:
     name: 🚪
     needs: test
 
@@ -138,8 +140,8 @@ jobs:
 
     steps:
       - name: Finished
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip3 install coveralls
           coveralls --finish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
