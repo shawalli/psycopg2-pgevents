@@ -4,8 +4,6 @@ psycopg2-pgevents
 
 .. image:: https://badge.fury.io/py/psycopg2-pgevents.svg
     :target: https://badge.fury.io/py/psycopg2-pgevents
-.. image:: https://circleci.com/gh/shawalli/psycopg2-pgevents.svg?style=svg
-    :target: https://circleci.com/gh/shawalli/psycopg2-pgevents
 .. image:: https://coveralls.io/repos/github/shawalli/psycopg2-pgevents/badge.svg?branch=master
     :target: https://coveralls.io/github/shawalli/psycopg2-pgevents?branch=master
 .. image:: https://img.shields.io/badge/License-MIT-yellow.svg
