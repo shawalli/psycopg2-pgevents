@@ -57,6 +57,15 @@ jobs:
       #     poetry config pypi-token.pypi ${{ secrets.PYPI_PASSWORD }}
       #     poetry publish
 
+      - name: Generate release message
+        id: release_message
+        run: |
+          # Get (squashed) commit summaries since last tag, convert to list,
+          # escape multi-lines into a format GitHub Actions respect, and set as output
+          export NOTES=`git log --pretty=format:'%s' $(git describe --tags --abbrev=0 HEAD^)..HEAD | tr '\n' '\0' | xargs -0 -I{} echo '- {}'`
+          export NOTES_ENCODED_NEWLINES="${NOTES//$'\n'/'%0A'}"
+          echo "::set-output name=message::$NOTES_ENCODED_NEWLINES"
+
       - name: Create release
         uses: actions/create-release@v1.1.2
         env:
@@ -64,5 +73,6 @@ jobs:
         with:
           tag_name: ${{ steps.bumpversion.outputs.new_tag }}
           release_name: ${{ steps.bumpversion.outputs.new_tag }}
+          body: ${{ steps.release_message.outputs.message}}
           draft: false
           prerelease: false
