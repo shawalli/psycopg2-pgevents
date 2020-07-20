@@ -1,5 +1,5 @@
 """This module provides functionality for interacting directly with the database."""
-__all__ = ['execute']
+__all__ = ["execute"]
 
 
 from typing import Dict, List, Optional, Tuple, Union
@@ -9,27 +9,24 @@ from psycopg2.extensions import connection, cursor
 
 from psycopg2_pgevents.debug import log
 
-_LOGGER_NAME = 'pgevents.sql'
+_LOGGER_NAME = "pgevents.sql"
 
 
 class Psycopg2Cursor(cursor):
-    def execute(self, query: str, args: Union[Dict, List, None]=None):
-        log('Query', logger_name=_LOGGER_NAME)
-        log('-----', logger_name=_LOGGER_NAME)
+    def execute(self, query: str, args: Union[Dict, List, None] = None):
+        log("Query", logger_name=_LOGGER_NAME)
+        log("-----", logger_name=_LOGGER_NAME)
         log(self.mogrify(query, args), logger_name=_LOGGER_NAME)
 
         try:
             super().execute(query, args)
         except Exception as e:
-            log('Exception', category='error', logger_name=_LOGGER_NAME)
-            log('---------', category='error', logger_name=_LOGGER_NAME)
+            log("Exception", category="error", logger_name=_LOGGER_NAME)
+            log("---------", category="error", logger_name=_LOGGER_NAME)
             log(
-                '{name}: {msg}'.format(
-                    name=e.__class__.__name__,
-                    msg=str(e)
-                ),
-                category='error',
-                logger_name=_LOGGER_NAME
+                "{name}: {msg}".format(name=e.__class__.__name__, msg=str(e)),
+                category="error",
+                logger_name=_LOGGER_NAME,
             )
             raise
 
@@ -70,19 +67,19 @@ def execute(connection: connection, statement: str) -> Optional[List[Tuple[str, 
                 response = cursor.fetchall()
                 if not response:
                     # Empty response list
-                    log('<No Response>', logger_name=_LOGGER_NAME)
+                    log("<No Response>", logger_name=_LOGGER_NAME)
                     return None
             except ProgrammingError as e:
-                if e.args and e.args[0] == 'no results to fetch':
+                if e.args and e.args[0] == "no results to fetch":
                     # No response available (i.e. no response given)
-                    log('<No Response>', logger_name=_LOGGER_NAME)
+                    log("<No Response>", logger_name=_LOGGER_NAME)
                     return None
 
                 # Some other programming error; re-raise
                 raise e
 
-            log('Response', logger_name=_LOGGER_NAME)
-            log('--------', logger_name=_LOGGER_NAME)
+            log("Response", logger_name=_LOGGER_NAME)
+            log("--------", logger_name=_LOGGER_NAME)
             for line in response:
                 log(str(line), logger_name=_LOGGER_NAME)
 

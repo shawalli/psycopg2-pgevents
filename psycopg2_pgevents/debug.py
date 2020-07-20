@@ -1,14 +1,14 @@
 """This module provides functionality for debug logging within the package."""
-__all__ = ['log', 'set_debug']
+__all__ = ["log", "set_debug"]
 
-from contextlib import contextmanager
-from typing import Generator
 import logging
 import sys
+from contextlib import contextmanager
+from typing import Generator
 
 _DEBUG_ENABLED = False
 
-_LOGGER_NAME = 'pgevents.debug'
+_LOGGER_NAME = "pgevents.debug"
 
 
 def set_debug(enabled: bool):
@@ -23,11 +23,11 @@ def set_debug(enabled: bool):
     global _DEBUG_ENABLED
 
     if not enabled:
-        log('Disabling debug output...', logger_name=_LOGGER_NAME)
+        log("Disabling debug output...", logger_name=_LOGGER_NAME)
         _DEBUG_ENABLED = False
     else:
         _DEBUG_ENABLED = True
-        log('Enabling debug output...', logger_name=_LOGGER_NAME)
+        log("Enabling debug output...", logger_name=_LOGGER_NAME)
 
 
 @contextmanager
@@ -54,7 +54,7 @@ def _create_logger(name: str, level: int) -> Generator[logging.Logger, None, Non
 
     # Setup handler and add to logger
     handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter('%(asctime)s %(levelname)-5s [%(name)s]: %(message)s')
+    formatter = logging.Formatter("%(asctime)s %(levelname)-5s [%(name)s]: %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
@@ -68,7 +68,7 @@ def _create_logger(name: str, level: int) -> Generator[logging.Logger, None, Non
     handler.close()
 
 
-def log(message: str, *args: str, category: str='info', logger_name: str='pgevents'):
+def log(message: str, *args: str, category: str = "info", logger_name: str = "pgevents"):
     """Log a message to the given logger.
 
     If debug has not been enabled, this method will not log a message.

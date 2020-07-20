@@ -1,0 +1,73 @@
+name: Package, Ship
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  package:
+    name: 📦 & 🚢
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Get next package version
+        id: bumpversion
+        uses: anothrNick/github-tag-action@1.23.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DRY_RUN: true
+
+      - name: Install poetry
+        uses: dschep/install-poetry-action@v1.3
+        with:
+          create_virtualenvs: true
+
+      - name: Bump release version
+        run: poetry version ${{ steps.bumpversion.outputs.new_tag }}
+
+      - name: Build package
+        run: poetry build
+
+      - name: Publish package (Test PyPI)
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_PASSWORD }}
+          poetry publish -r testpypi
+
+      - name: Publish package (PyPI)
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.PYPI_PASSWORD }}
+          poetry publish
+
+      - name: Generate release message
+        id: release_message
+        run: |
+          # Get (squashed) commit summaries since last tag, convert to list,
+          # escape multi-lines into a format GitHub Actions respect, and set as output
+          export NOTES=`git log --pretty=format:'%s' $(git describe --tags --abbrev=0 HEAD^)..HEAD | tr '\n' '\0' | xargs -0 -I{} echo '- {}'`
+          export NOTES_ENCODED_NEWLINES="${NOTES//$'\n'/'%0A'}"
+          echo "::set-output name=message::$NOTES_ENCODED_NEWLINES"
+
+      - name: Create release
+        uses: actions/create-release@v1.1.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bumpversion.outputs.new_tag }}
+          release_name: ${{ steps.bumpversion.outputs.new_tag }}
+          body: ${{ steps.release_message.outputs.message}}
+          draft: false
+          prerelease: false
