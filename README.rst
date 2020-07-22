@@ -77,4 +77,3 @@ Authorship and License
 **********************
 
 Written by Shawn Wallis and distributed under the MIT license.
-

@@ -157,7 +157,7 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
     return installed
 
 
-def install_trigger_function(connection: connection, rowid, rowidtype: str, overwrite: bool=False) -> None:
+def install_trigger_function(connection: connection, rowid, rowidtype: str, overwrite: bool = False) -> None:
     """Install the psycopg2-pgevents trigger function against the database.
 
     Parameters
@@ -215,7 +215,14 @@ def uninstall_trigger_function(connection: connection, force: bool = False) -> N
     execute(connection, statement)
 
 
-def install_trigger(connection: connection, table: str, schema: str='public', overwrite: bool=False, trigger_on_update: bool=True, trigger_on_delete: bool=True) -> None:
+def install_trigger(
+    connection: connection,
+    table: str,
+    schema: str = "public",
+    overwrite: bool = False,
+    trigger_on_update: bool = True,
+    trigger_on_delete: bool = True,
+) -> None:
     """Install a psycopg2-pgevents trigger against a table.
 
     Parameters
@@ -240,27 +247,22 @@ def install_trigger(connection: connection, table: str, schema: str='public', ov
 
     """
     prior_install = False
-    orupdate = ' OR UPDATE'
-    ordelete = ' OR DELETE'
+    orupdate = " OR UPDATE"
+    ordelete = " OR DELETE"
 
     if not overwrite:
         prior_install = trigger_installed(connection, table, schema)
 
     if not trigger_on_update:
-        orupdate = ''
+        orupdate = ""
 
     if not trigger_on_delete:
-        ordelete = ''
+        ordelete = ""
 
     if not prior_install:
         log("Installing {}.{} trigger...".format(schema, table), logger_name=_LOGGER_NAME)
 
-        statement = INSTALL_TRIGGER_STATEMENT.format(
-            schema=schema,
-            table=table,
-            orupdate=orupdate,
-            ordelete=ordelete
-        )
+        statement = INSTALL_TRIGGER_STATEMENT.format(schema=schema, table=table, orupdate=orupdate, ordelete=ordelete)
         execute(connection, statement)
     else:
         log("{}.{} trigger already installed; skipping...".format(schema, table), logger_name=_LOGGER_NAME)
