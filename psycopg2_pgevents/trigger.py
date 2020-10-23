@@ -23,7 +23,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 SET search_path = public, pg_catalog;
 
-CREATE OR REPLACE FUNCTION psycopg2_pgevents_create_event()
+CREATE OR REPLACE FUNCTION psycopg2_pgevents_create_event{triggerid}()
 RETURNS TRIGGER AS $function$
   DECLARE
     row_id {rowidtype};
@@ -52,24 +52,24 @@ SET search_path = "$user", public;
 """
 
 UNINSTALL_TRIGGER_FUNCTION_STATEMENT = """
-DROP FUNCTION IF EXISTS public.psycopg2_pgevents_create_event() {modifier};
+DROP FUNCTION IF EXISTS public.psycopg2_pgevents_create_event{triggerid}() {modifier};
 """
 
 INSTALL_TRIGGER_STATEMENT = """
 SET search_path = {schema}, pg_catalog;
 
-DROP TRIGGER IF EXISTS psycopg2_pgevents_trigger ON {schema}.{table};
+DROP TRIGGER IF EXISTS psycopg2_pgevents_trigger{triggerid} ON {schema}.{table};
 
-CREATE TRIGGER psycopg2_pgevents_trigger
+CREATE TRIGGER psycopg2_pgevents_trigger{triggerid}
 AFTER INSERT{orupdate}{ordelete} ON {schema}.{table}
 FOR EACH ROW
-EXECUTE PROCEDURE public.psycopg2_pgevents_create_event();
+EXECUTE PROCEDURE public.psycopg2_pgevents_create_event{triggerid}();
 
 SET search_path = "$user", public;
 """
 
 UNINSTALL_TRIGGER_STATEMENT = """
-DROP TRIGGER IF EXISTS psycopg2_pgevents_trigger ON {schema}.{table};
+DROP TRIGGER IF EXISTS psycopg2_pgevents_trigger{triggerid} ON {schema}.{table};
 """
 
 SELECT_TRIGGER_STATEMENT = """
@@ -80,17 +80,19 @@ FROM
 WHERE
     event_object_schema = '{schema}' AND
     event_object_table = '{table}' AND
-    trigger_name = 'psycopg2_pgevents_trigger';
+    trigger_name = 'psycopg2_pgevents_trigger{triggerid}';
 """
 
 
-def trigger_function_installed(connection: connection):
+def trigger_function_installed(connection: connection, triggerid: str = ""):
     """Test whether or not the psycopg2-pgevents trigger function is installed.
 
     Parameters
     ----------
     connection: psycopg2.extensions.connection
         Active connection to a PostGreSQL database.
+    triggerid: str
+        If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
     Returns
     -------
@@ -102,8 +104,16 @@ def trigger_function_installed(connection: connection):
 
     log("Checking if trigger function installed...", logger_name=_LOGGER_NAME)
 
+    if triggerid:
+        triggerid = "_{triggerid}".format(triggerid=triggerid)
+
     try:
-        execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
+        execute(
+            connection,
+            "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event{triggerid}'::regproc);".format(
+                triggerid=triggerid
+            ),
+        )
         installed = True
     except ProgrammingError as e:
         if e.args:
@@ -124,7 +134,7 @@ def trigger_function_installed(connection: connection):
     return installed
 
 
-def trigger_installed(connection: connection, table: str, schema: str = "public"):
+def trigger_installed(connection: connection, table: str, schema: str = "public", triggerid: str = ""):
     """Test whether or not a psycopg2-pgevents trigger is installed for a table.
 
     Parameters
@@ -135,6 +145,8 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
         Table whose trigger-existence will be checked.
     schema: str
         Schema to which the table belongs.
+    triggerid: str
+        If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
     Returns
     -------
@@ -146,7 +158,11 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
 
     log("Checking if {}.{} trigger installed...".format(schema, table), logger_name=_LOGGER_NAME)
 
-    statement = SELECT_TRIGGER_STATEMENT.format(table=table, schema=schema)
+    # FIXME: add some validation to ensure valid characters for triggerid
+    if triggerid:
+        triggerid = "_{triggerid}".format(triggerid=triggerid)
+
+    statement = SELECT_TRIGGER_STATEMENT.format(table=table, schema=schema, triggerid=triggerid)
 
     result = execute(connection, statement)
     if result:
@@ -157,7 +173,9 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
     return installed
 
 
-def install_trigger_function(connection: connection, rowid, rowidtype: str, overwrite: bool = False) -> None:
+def install_trigger_function(
+    connection: connection, rowid, rowidtype: str, overwrite: bool = False, triggerid: str = ""
+) -> None:
     """Install the psycopg2-pgevents trigger function against the database.
 
     Parameters
@@ -169,6 +187,8 @@ def install_trigger_function(connection: connection, rowid, rowidtype: str, over
         trigger function, if existing installation is found.
     rowid: string
         The id to return for the row, e.g. id, ordercode, etc
+    triggerid: str
+        If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
     Returns
     -------
@@ -178,17 +198,22 @@ def install_trigger_function(connection: connection, rowid, rowidtype: str, over
     prior_install = False
 
     if not overwrite:
-        prior_install = trigger_function_installed(connection)
+        prior_install = trigger_function_installed(connection, triggerid)
+
+    if triggerid:
+        triggerid = "_{triggerid}".format(triggerid=triggerid)
 
     if not prior_install:
         log("Installing trigger function...", logger_name=_LOGGER_NAME)
 
-        execute(connection, INSTALL_TRIGGER_FUNCTION_STATEMENT.format(rowid=rowid, rowidtype=rowidtype))
+        execute(
+            connection, INSTALL_TRIGGER_FUNCTION_STATEMENT.format(rowid=rowid, rowidtype=rowidtype, triggerid=triggerid)
+        )
     else:
         log("Trigger function already installed; skipping...", logger_name=_LOGGER_NAME)
 
 
-def uninstall_trigger_function(connection: connection, force: bool = False) -> None:
+def uninstall_trigger_function(connection: connection, force: bool = False, triggerid: str = "") -> None:
     """Uninstall the psycopg2-pgevents trigger function from the database.
 
     Parameters
@@ -199,6 +224,8 @@ def uninstall_trigger_function(connection: connection, force: bool = False) -> N
         If True, force the un-registration even if dependent triggers are still
         installed. If False, if there are any dependent triggers for the trigger
         function, the un-registration will fail.
+    triggerid: str
+        If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
     Returns
     -------
@@ -209,9 +236,12 @@ def uninstall_trigger_function(connection: connection, force: bool = False) -> N
     if force:
         modifier = "CASCADE"
 
+    if triggerid:
+        triggerid = "_{triggerid}".format(triggerid=triggerid)
+
     log("Uninstalling trigger function (cascade={})...".format(force), logger_name=_LOGGER_NAME)
 
-    statement = UNINSTALL_TRIGGER_FUNCTION_STATEMENT.format(modifier=modifier)
+    statement = UNINSTALL_TRIGGER_FUNCTION_STATEMENT.format(modifier=modifier, triggerid=triggerid)
     execute(connection, statement)
 
 
@@ -222,6 +252,7 @@ def install_trigger(
     overwrite: bool = False,
     trigger_on_update: bool = True,
     trigger_on_delete: bool = True,
+    triggerid: str = "",
 ) -> None:
     """Install a psycopg2-pgevents trigger against a table.
 
@@ -240,6 +271,8 @@ def install_trigger(
         Whether or not to add a "OR UPDATE" clause to the trigger; by default "ON INSERT OR UPDATE OR DELETE" is used
     trigger_on_delete: bool
         Whether or not to add a "OR DELETE" clause to the trigger; by default "ON INSERT OR UPDATE OR DELETE" is used
+    triggerid: str
+        If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
     Returns
     -------
@@ -259,16 +292,21 @@ def install_trigger(
     if not trigger_on_delete:
         ordelete = ""
 
+    if triggerid:
+        triggerid = "_{triggerid}".format(triggerid=triggerid)
+
     if not prior_install:
         log("Installing {}.{} trigger...".format(schema, table), logger_name=_LOGGER_NAME)
 
-        statement = INSTALL_TRIGGER_STATEMENT.format(schema=schema, table=table, orupdate=orupdate, ordelete=ordelete)
+        statement = INSTALL_TRIGGER_STATEMENT.format(
+            schema=schema, table=table, orupdate=orupdate, ordelete=ordelete, triggerid=triggerid
+        )
         execute(connection, statement)
     else:
         log("{}.{} trigger already installed; skipping...".format(schema, table), logger_name=_LOGGER_NAME)
 
 
-def uninstall_trigger(connection: connection, table: str, schema: str = "public") -> None:
+def uninstall_trigger(connection: connection, table: str, schema: str = "public", triggerid: str = "") -> None:
     """Uninstall a psycopg2-pgevents trigger from a table.
 
     Parameters
@@ -279,6 +317,8 @@ def uninstall_trigger(connection: connection, table: str, schema: str = "public"
         Table for which the trigger should be uninstalled.
     schema: str
         Schema to which the table belongs.
+    triggerid: str
+        If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
     Returns
     -------
@@ -287,5 +327,7 @@ def uninstall_trigger(connection: connection, table: str, schema: str = "public"
     """
     log("Uninstalling {}.{} trigger...".format(schema, table), logger_name=_LOGGER_NAME)
 
-    statement = UNINSTALL_TRIGGER_STATEMENT.format(schema=schema, table=table)
+    if triggerid:
+        triggerid = "_{triggerid}".format(triggerid=triggerid)
+    statement = UNINSTALL_TRIGGER_STATEMENT.format(schema=schema, table=table, triggerid=triggerid)
     execute(connection, statement)
