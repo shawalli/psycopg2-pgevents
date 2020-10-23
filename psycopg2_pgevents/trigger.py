@@ -14,6 +14,7 @@ from psycopg2.extensions import connection
 
 from psycopg2_pgevents.debug import log
 from psycopg2_pgevents.sql import execute
+from psycopg2_pgevents.validation import valid_trigger_id, valid_rowid_type
 
 _LOGGER_NAME = "pgevents.trigger"
 
@@ -105,6 +106,8 @@ def trigger_function_installed(connection: connection, triggerid: str = ""):
     log("Checking if trigger function installed...", logger_name=_LOGGER_NAME)
 
     if triggerid:
+        if not valid_trigger_id(triggerid):
+            raise ValueError("invalid triggerid = {}".format(triggerid))
         triggerid = "_{triggerid}".format(triggerid=triggerid)
 
     try:
@@ -158,8 +161,9 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
 
     log("Checking if {}.{} trigger installed...".format(schema, table), logger_name=_LOGGER_NAME)
 
-    # FIXME: add some validation to ensure valid characters for triggerid
     if triggerid:
+        if not valid_trigger_id(triggerid):
+            raise ValueError("invalid triggerid = {}".format(triggerid))
         triggerid = "_{triggerid}".format(triggerid=triggerid)
 
     statement = SELECT_TRIGGER_STATEMENT.format(table=table, schema=schema, triggerid=triggerid)
@@ -187,6 +191,8 @@ def install_trigger_function(
         trigger function, if existing installation is found.
     rowid: string
         The id to return for the row, e.g. id, ordercode, etc
+    rowidtype: string
+        The type to return for the rowid, e.g. int, text etc
     triggerid: str
         If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
@@ -201,7 +207,12 @@ def install_trigger_function(
         prior_install = trigger_function_installed(connection, triggerid)
 
     if triggerid:
+        if not valid_trigger_id(triggerid):
+            raise ValueError("invalid triggerid = {}".format(triggerid))
         triggerid = "_{triggerid}".format(triggerid=triggerid)
+
+    if not valid_rowid_type(rowidtype):
+        raise ValueError("invalid rowidtype = {}".format(rowidtype))
 
     if not prior_install:
         log("Installing trigger function...", logger_name=_LOGGER_NAME)
@@ -237,6 +248,8 @@ def uninstall_trigger_function(connection: connection, force: bool = False, trig
         modifier = "CASCADE"
 
     if triggerid:
+        if not valid_trigger_id(triggerid):
+            raise ValueError("invalid triggerid = {}".format(triggerid))
         triggerid = "_{triggerid}".format(triggerid=triggerid)
 
     log("Uninstalling trigger function (cascade={})...".format(force), logger_name=_LOGGER_NAME)
@@ -293,6 +306,8 @@ def install_trigger(
         ordelete = ""
 
     if triggerid:
+        if not valid_trigger_id(triggerid):
+            raise ValueError("invalid triggerid = {}".format(triggerid))
         triggerid = "_{triggerid}".format(triggerid=triggerid)
 
     if not prior_install:
@@ -328,6 +343,8 @@ def uninstall_trigger(connection: connection, table: str, schema: str = "public"
     log("Uninstalling {}.{} trigger...".format(schema, table), logger_name=_LOGGER_NAME)
 
     if triggerid:
+        if not valid_trigger_id(triggerid):
+            raise ValueError("invalid triggerid = {}".format(triggerid))
         triggerid = "_{triggerid}".format(triggerid=triggerid)
     statement = UNINSTALL_TRIGGER_STATEMENT.format(schema=schema, table=table, triggerid=triggerid)
     execute(connection, statement)
