@@ -178,7 +178,7 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
 
 
 def install_trigger_function(
-    connection: connection, rowid, rowidtype: str, overwrite: bool = False, triggerid: str = ""
+    connection: connection, rowid: str = "id", rowidtype: str = "int", overwrite: bool = False, triggerid: str = ""
 ) -> None:
     """Install the psycopg2-pgevents trigger function against the database.
 
@@ -191,8 +191,10 @@ def install_trigger_function(
         trigger function, if existing installation is found.
     rowid: string
         The id to return for the row, e.g. id, ordercode, etc
+        default is "id"
     rowidtype: string
         The type to return for the rowid, e.g. int, text etc
+        default is "int"
     triggerid: str
         If there's more than 1 trigger in this database, we need to uniquely identify the trigger with an extra id
 
