@@ -5,16 +5,16 @@ allowed_id_charset = set(string.ascii_letters + string.digits)
 allowed_rowid_types = ["smallint", "int", "serial", "float", "real", "numeric", "char", "varchar", "text"]
 
 
-def valid_trigger_id(triggerid: str):
+def valid_trigger_id(triggerid: str) -> bool:
     """
     check for triggerid being valid in allowed_id_charset, which is nominally 
     [a-zA-Z0-9] as per allowed_id_charset
     """
     my_set = set(triggerid)
-    return my_set - allowed_id_charset
+    return not (my_set - allowed_id_charset)
 
 
-def valid_rowid_type(rowidtype: str):
+def valid_rowid_type(rowidtype: str) -> bool:
     """
     check for rowidtype being a valid postgres type, nominally for now restricted to 
     numeric(integer/float) and character as per allowed_rowid_types
