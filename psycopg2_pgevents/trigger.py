@@ -204,6 +204,12 @@ def install_trigger_function(
 
     """
     prior_install = False
+    # doublecheck rowid/rowidtypes in case None or "" are inputs
+    if not rowid:
+        rowid = "id"
+
+    if not rowidtype:
+        rowidtype = "int"
 
     if not overwrite:
         prior_install = trigger_function_installed(connection, triggerid)
