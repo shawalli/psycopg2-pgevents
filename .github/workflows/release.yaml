@@ -24,16 +24,16 @@ jobs:
 
       - name: Get next package version
         id: bumpversion
-        uses: anothrNick/github-tag-action@1.23.0
+        uses: anothrNick/github-tag-action@1.35.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
           DRY_RUN: true
 
       - name: Install poetry
-        uses: dschep/install-poetry-action@v1.3
+        uses: snok/install-poetry@v1.1.2
         with:
-          create_virtualenvs: true
+          virtualenvs-create: true
 
       - name: Bump release version
         run: poetry version ${{ steps.bumpversion.outputs.new_tag }}
@@ -62,12 +62,9 @@ jobs:
           echo "::set-output name=message::$NOTES_ENCODED_NEWLINES"
 
       - name: Create release
-        uses: actions/create-release@v1.1.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1.8.3
         with:
-          tag_name: ${{ steps.bumpversion.outputs.new_tag }}
-          release_name: ${{ steps.bumpversion.outputs.new_tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit: ${{ github.event.push.ref }}
+          tag: ${{ steps.bumpversion.outputs.new_tag }}
           body: ${{ steps.release_message.outputs.message}}
-          draft: false
-          prerelease: false
