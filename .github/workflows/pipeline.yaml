@@ -23,6 +23,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Checkout master and PR branch
+        run: |
+          git fetch --no-tags --depth=1 origin +refs/heads/${{ github.base_ref }}
+          git fetch --no-tags --depth=1 origin ${{ github.sha }}
+
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -53,9 +58,7 @@ jobs:
 
       - name: Run pre-commit
         if: github.event_name == 'pull_request'
-        run: |
-          git fetch origin master:master
-          poetry run pre-commit run --from-ref master --to-ref HEAD
+        run: poetry run pre-commit run --show-diff-on-failure --files $(git diff --name-only --no-ext-diff -z origin/master..HEAD)
 
   test:
     name: 🧪
