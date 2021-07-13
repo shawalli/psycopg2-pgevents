@@ -48,9 +48,9 @@ producer.py
 	DB_HOST="127.0.0.1"
 	DB_DATABASE="eventtriggertest"
 
-	DATABASE_URI_PROD = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
+	DATABASE_URI = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
 
-	engine = create_engine(DATABASE_URI_PROD, echo = True)
+	engine = create_engine(DATABASE_URI, echo = True)
 	Session = sessionmaker(bind = engine)
 	Base = declarative_base()
 
