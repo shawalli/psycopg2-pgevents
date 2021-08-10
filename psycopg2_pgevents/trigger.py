@@ -25,11 +25,8 @@ SET search_path = public, pg_catalog;
 
 CREATE OR REPLACE FUNCTION {trigger_function}()
 RETURNS TRIGGER AS $function$
-  DECLARE
-    row_id integer;
   BEGIN
     IF (TG_OP = 'DELETE') THEN
-      row_id = OLD.{_pk};
       PERFORM pg_notify(
         'psycopg2_pgevents_channel',
         json_build_object(
@@ -41,7 +38,6 @@ RETURNS TRIGGER AS $function$
         )::text
       );
     ELSE
-      row_id = NEW.{_pk};
       PERFORM pg_notify(
         'psycopg2_pgevents_channel',
         json_build_object(
@@ -169,8 +165,7 @@ def trigger_installed(connection: connection, table: str, schema: str = "public"
 
 def install_trigger_function(connection: connection,
                              table_name: str,
-                             overwrite: bool = False,
-                             _pk: str = 'id') -> None:
+                             overwrite: bool = False) -> None:
     """Install the psycopg2-pgevents trigger function against the database.
 
     Parameters
@@ -197,7 +192,6 @@ def install_trigger_function(connection: connection,
 
         execute(connection,
                 INSTALL_TRIGGER_FUNCTION_STATEMENT.format(
-                    _pk=_pk,
                     trigger_function=f"{table_name}_function"))
     else:
         log("Trigger function already installed; skipping...", logger_name=_LOGGER_NAME)
