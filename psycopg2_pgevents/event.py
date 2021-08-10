@@ -28,7 +28,7 @@ class Event:
         Schema in which the event occurred.
     table_name: str
         Table in which event occurred.
-    row_id: str
+    row: str
         Row ID of event. This attribute is a string so that it can
         represent both regular id's and things like UUID's.
     """
@@ -37,9 +37,9 @@ class Event:
     type: str
     schema_name: str
     table_name: str
-    row_id: str
+    row: dict
 
-    def __init__(self, id_: UUID, type_: str, schema_name: str, table_name: str, row_id: str) -> None:
+    def __init__(self, id_: UUID, type_: str, schema_name: str, table_name: str, row: dict) -> None:
         """Initialize a new Event.
 
         Parameters
@@ -52,7 +52,7 @@ class Event:
             Schema in which the event occurred.
         table_name: str
             Table in which event occurred.
-        row_id: str
+        row: str
             Row ID of event. This attribute is a string so that it can
             represent both regular id's and things like UUID's.
 
@@ -65,11 +65,11 @@ class Event:
         self.type = type_
         self.schema_name = schema_name
         self.table_name = table_name
-        self.row_id = row_id
+        self.row = row
 
     def __repr__(self):
-        return "<Event id:{id_} type:{type_} table:{schema}.{table} row-id:{row_id}".format(
-            id_=self.id, type_=self.type, schema=self.schema_name, table=self.table_name, row_id=self.row_id
+        return "<Event id:{id_} type:{type_} table:{schema}.{table} row:{row}".format(
+            id_=self.id, type_=self.type, schema=self.schema_name, table=self.table_name, row=self.row
         )
 
     @classmethod
@@ -88,7 +88,7 @@ class Event:
 
         """
         obj = json.loads(json_string)
-        return cls(UUID(obj["event_id"]), obj["event_type"], obj["schema_name"], obj["table_name"], obj["row_id"])
+        return cls(UUID(obj["event_id"]), obj["event_type"], obj["schema_name"], obj["table_name"], obj["row"])
 
     def tojson(self) -> str:
         """Serialize an Event into JSON.
@@ -105,7 +105,7 @@ class Event:
                 "event_type": self.type,
                 "schema_name": self.schema_name,
                 "table_name": self.table_name,
-                "row_id": self.row_id,
+                "row": self.row,
             }
         )
 

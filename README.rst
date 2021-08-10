@@ -25,35 +25,8 @@ Assumptions
 -----------
 
  - PostGreSQL server is running locally.
- - default database (``postgres``) is available.
- - table exists in database in the public schema with the name ``orders``.
+ - DB "eventtriggertest" is available
 
-.. code-block:: python
-
-    from psycopg2 import connect
-    from psycopg2_pgevents.trigger import install_trigger, \
-        install_trigger_function, uninstall_trigger, uninstall_trigger_function
-    from psycopg2_pgevents.event import poll, register_event_channel, \
-        unregister_event_channel
-
-    connection = connect(dsn='postgres:///postgres')
-    connection.autocommit = True
-
-    install_trigger_function(connection)
-    install_trigger(connection, 'orders')
-    register_event_channel(connection)
-
-    try:
-        print('Listening for events...')
-        while True:
-            for evt in poll(connection):
-                print('New Event: {}'.format(evt))
-    except KeyboardInterrupt:
-        print('User exit via Ctrl-C; Shutting down...')
-        unregister_event_channel(connection)
-        uninstall_trigger(connection, 'orders')
-        uninstall_trigger_function(connection)
-        print('Shutdown complete.')
 
 ***************
 Troubleshooting
@@ -75,4 +48,5 @@ Troubleshooting
 Authorship and License
 **********************
 
-Written by Shawn Wallis and distributed under the MIT license.
+Orignally Written by Shawn Wallis and distributed under the MIT license.
+
