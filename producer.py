@@ -34,12 +34,35 @@ class User(Base):
     name = Column(String)                                                                                                                                                                                               
     address = Column(String)                                                                                                                                                                                            
     email = Column(String)                                                                                                                                                                                              
-                                                                                                                                                                                                                        
-def add_person():                                                                                                                                                                                                       
-                                                                                                                                                                                                                        
+
+def update_persons():
+
+    u_u = session.query(User).first()
+    c_u = session.query(Customer).first()
+    u_u.name = faker.name()
+    c_u.name = faker.name()
+    session.add(u_u)
+    session.add(c_u)
+
+    session.commit()
+
+
+def delete_persons():
+
+    u_d = session.query(User).first()
+    c_d = session.query(Customer).first()
+
+    session.delete(u_d)
+    session.delete(c_d)
+    session.commit()
+
+
+
+def add_persons():
+
     c = Customer()                                                                                                                                                                                                      
     u = User()                                                                                                                                                                                                          
-                                                                                                                                                                                                                    
+
     u.name = faker.name()                                                                                                                                                                                               
     u.email = faker.email()                                                                                                                                                                                             
     u.address = faker.address()                                                                                                                                                                                         
@@ -47,17 +70,20 @@ def add_person():
     c.name = faker.name()                                                                                                                                                                                               
     c.email = faker.email()                                                                                                                                                                                             
     c.address = faker.address()                                                                                                                                                                                         
-                                                                                                                                                                                                                    
-    session.add(c)                                                                                                                                                                                                      
-    session.add(u)                                                                                                                                                                                                      
-    session.commit()                                                                                                                                                                                                    
-                                                                                                                                                                                                                        
-                                                                                                                                                                                                                        
+
+    session.add(c)
+    session.add(u)
+    session.commit()
+
+
 def main():                                                                                                                                                                                                             
     Base.metadata.create_all(engine)                                                                                                                                                                                    
     insp = inspect(engine)                                                                                                                                                                                              
     print(insp.get_table_names())                                                                                                                                                                                       
-                                                                                                                                                                                                                        
+
+
 if __name__ == '__main__':                                                                                                                                                                                              
     main()                                                                                                                                                                                                              
-    add_person()                                                                                                                                                                                                        
+    add_persons()
+    update_persons()
+    delete_persons()
