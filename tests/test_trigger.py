@@ -42,7 +42,7 @@ class TestTrigger:
     def test_add_trigger_function(self, connection):
         trigger_function_installed = False
 
-        trigger.install_trigger_function(connection)
+        trigger.install_trigger_function(connection, rowid="id")
         try:
             execute(connection, "SELECT pg_get_functiondef('public.psycopg2_pgevents_create_event'::regproc);")
             trigger_function_installed = True
@@ -64,6 +64,42 @@ class TestTrigger:
             trigger_function_installed = False
 
         assert not trigger_function_installed
+
+    # a list of tuples to use in the parametrized trigger_funtion_extended tests later
+    # (rowid:str, rowidtype:str, triggerid:str, success:bool)
+    trigger_function_test_tuple_lists = [
+        (None, None, None, True),
+        ("id", "int", None, True),
+        ("id", "int", "id", True),
+        ("id", "int", "123", True),
+        ("id", "int", "123abc", True),
+        ("idd", None, None, False),
+        ("id", "intt", None, False),
+        ("id", "int", "&*(", False),
+        (None, None, "_id_", False),
+        (None, None, " @$", False),
+    ]
+
+    @mark.parametrize("rowid, rowidtype, triggerid, success", trigger_function_test_tuple_lists)
+    def test_add_trigger_function_extended(self, connection, rowid, rowidtype, triggerid, success):
+        try:
+            trigger.install_trigger_function(connection, rowid=rowid, rowidtype=rowidtype, triggerid=triggerid)
+            installed = trigger.trigger_function_installed(connection, triggerid)
+            assert installed == success
+        except Exception as e:
+            # assert that it should fail i.e. not success
+            assert not success
+
+    @mark.parametrize("rowid, rowidtype, triggerid, success", trigger_function_test_tuple_lists)
+    def test_remove_trigger_function_extended(self, connection, rowid, rowidtype, triggerid, success):
+        try:
+            trigger.uninstall_trigger_function(connection, triggerid=triggerid)
+            installed = trigger.trigger_function_installed(connection, triggerid)
+            # the function should no longer be installed, so not success
+            assert not installed == success
+        except Exception as e:
+            # assert that it should fail i.e. not success
+            assert not success
 
     @mark.usefixtures("trigger_fn_installed")
     def test_add_public_schema_trigger(self, connection):
